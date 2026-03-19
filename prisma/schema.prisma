@@ -1,0 +1,193 @@
+//임시 스키마입니다. 임시 스키마인데 왜 이렇게 열심히 썼을까요...🫠
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Provider {
+  LOCAL
+  GOOGLE
+}
+
+enum UserType {
+  USER
+  ADMIN
+}
+
+enum Grade {
+  NORMAL
+  EXPERT
+}
+
+enum Field {
+  NEXT_JS
+  MODERN_JS
+  WEB
+  ETC
+}
+
+enum DocumentType {
+  OFFICIAL_DOC
+  BLOG
+  BOOK
+  ETC
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  DELETED
+}
+
+enum ProgressStatus {
+  OPEN
+  CLOSED
+}
+
+enum NotificationType {
+  //챌린지 신청 유저 대상
+  CHALLENGE_ADMIN_APPROVED
+  CHALLENGE_ADMIN_REJECTED
+  CHALLENGE_ADMIN_UPDATED
+  CHALLENGE_FULL
+  SUBMISSION_CREATED
+  SUBMISSION_UPDATED
+  SUBMISSION_DELETED
+
+  //챌린지 참여 유저 대상
+  CHALLENGE_ADMIN_DELETED
+  CHALLENGE_EXPIRED
+  SUBMISSION_LIKED
+
+  //작업물 작성 유저 대상
+  FEEDBACK_CREATED
+
+  //피드백 작성 유저 대상
+  FEEDBACK_ADMIN_DELETED
+}
+
+model User {
+  id                String   @id @default(ulid())
+  email             String   @unique
+  nickname          String   @unique
+  passwordHash      String?
+  provider          Provider
+  providerAccountId String?
+  userType          UserType
+  grade             Grade
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  createdChallenge    Challenge[]
+  participation       ChallengeParticipant[]
+  submission          Submission[]
+  submissionLike      SubmissionLike[]
+  feedback            Feedback[]
+  notification        Notification[]         @relation("UserNotification")
+  createdNotification Notification[]         @relation("ActorNotification")
+  drafts              Draft[]
+}
+
+model Challenge {
+  id              String          @id @default(ulid())
+  title           String
+  sourceUrl       String
+  field           Field
+  documentType    DocumentType
+  description     String
+  deadline        DateTime
+  maxParticipants Int
+  reviewStatus    ReviewStatus
+  progressStatus  ProgressStatus?
+  rejectReason    String?
+  deleteReason    String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  creatorId       String
+  creator         User            @relation(fields: [creatorId], references: [id])
+
+  participants ChallengeParticipant[]
+  submissions  Submission[]
+  drafts       Draft[]
+}
+
+model ChallengeParticipant {
+  id          String    @id @default(ulid())
+  challengeId String
+  challenge   Challenge @relation(fields: [challengeId], references: [id])
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([challengeId, userId])
+}
+
+model Submission {
+  id          String    @id @default(ulid())
+  challengeId String
+  challenge   Challenge @relation(fields: [challengeId], references: [id])
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  title       String
+  content     String    @db.Text
+  isDeleted   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  likes     SubmissionLike[]
+  feedbacks Feedback[]
+}
+
+model Feedback {
+  id           String     @id @default(ulid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id])
+  userId       String
+  user         User       @relation(fields: [userId], references: [id])
+  content      String     @db.Text
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model SubmissionLike {
+  id           String     @id @default(ulid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id])
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id])
+  createdAt    DateTime   @default(now())
+
+  @@unique([submissionId, userId])
+}
+
+model Notification {
+  id          String           @id @default(ulid())
+  userId      String // 알림 수신 유저
+  user        User             @relation("UserNotification", fields: [userId], references: [id])
+  actorUserId String // 알림 발생 유저
+  actor       User             @relation("ActorNotification", fields: [actorUserId], references: [id])
+  type        NotificationType
+  content     String
+  isRead      Boolean          @default(false)
+  targetId    String
+  createdAt   DateTime         @default(now())
+}
+
+model Draft {
+  id          String    @id @default(ulid())
+  challengeId String
+  challenge   Challenge @relation(fields: [challengeId], references: [id])
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  title       String
+  content     String    @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
