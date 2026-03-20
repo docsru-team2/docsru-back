@@ -7,9 +7,11 @@ export * from './user/index.js';
 export * from './challenge/index.js';
 export * from './submission/index.js';
 export * from './notification/index.js';
+export * from './admin/index.js';
 
 export class Controller extends BaseController {
   #authController;
+  #adminController;
   #userController;
   #challengeController;
   #submissionController;
@@ -19,6 +21,7 @@ export class Controller extends BaseController {
     authController,
     userController,
     challengeController,
+    adminController,
     submissionController,
     notificationController,
   }) {
@@ -28,12 +31,13 @@ export class Controller extends BaseController {
     this.#challengeController = challengeController;
     this.#submissionController = submissionController;
     this.#notificationController = notificationController;
+    this.#adminController = adminController;
   }
 
   routes() {
     this.router.use('/auth', this.#authController.routes());
     this.router.use('/user', needsLogin, this.#userController.routes());
-    this.router.use('/admin', needsLogin, this.#userController.routes());
+    this.router.use('/admin', needsLogin, this.#adminController.routes());
     this.router.use('/challenges', this.#challengeController.routes());
     this.router.use(
       '/submissions',

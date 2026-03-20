@@ -1,9 +1,9 @@
 import { BaseController } from '#controllers/base.controller.js';
 import { HTTP_STATUS } from '#constants';
 import { validate, needsLogin } from '#middlewares';
-import { createUserSchema, idParamSchema } from './dto/addmin.dto.js';
+import { createUserSchema, idParamSchema } from './dto/admin.dto.js';
 
-export class UserController extends BaseController {
+export class AdminController extends BaseController {
   #userService;
 
   constructor({ userService }) {
@@ -18,7 +18,7 @@ export class UserController extends BaseController {
     );
     this.router.get(
       '/me',
-      
+
       validate('params', idParamSchema),
       (req, res) => this.findById(req, res),
     );
@@ -32,6 +32,4 @@ export class UserController extends BaseController {
     const users = await this.#userService.listUsers();
     res.status(HTTP_STATUS.OK).json(users);
   }
-
-  
 }

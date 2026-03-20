@@ -27,7 +27,9 @@ enum Grade {
 enum Field {
   NEXT_JS
   MODERN_JS
+  API
   WEB
+  CAREER
   ETC
 }
 

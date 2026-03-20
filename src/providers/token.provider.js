@@ -17,13 +17,13 @@ export class TokenProvider {
         name: user.name,
       },
       this.#accessSecret,
-      { expiresIn: '15m' },
+      { expiresIn: '1d' },
     );
   }
 
   generateRefreshToken(user) {
     return jwt.sign({ userId: user.id }, this.#refreshSecret, {
-      expiresIn: '7d',
+      expiresIn: '14d',
     });
   }
 

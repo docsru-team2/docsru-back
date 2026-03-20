@@ -9,7 +9,7 @@ export class CookieProvider {
       httpOnly: true,
       secure: config.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 1 * HOUR_IN_MS,
+      maxAge: 1 * DAY_IN_MS,
       path: '/',
     });
 
