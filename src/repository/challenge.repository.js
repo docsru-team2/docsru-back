@@ -176,6 +176,7 @@ export class ChallengeRepository {
         },
         createdAt: true,
       },
+      select: challengeDetailSelect,
     });
   }
 
