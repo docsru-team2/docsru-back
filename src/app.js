@@ -32,7 +32,8 @@ export class App {
 
   listen(port) {
     return this.app.listen(port, () => {
-      console.log(`Server is running port number is ${port}`);
+      // console.log(`Server is running port number is ${port}`);
+      console.log(`Server is running http://localhost:${port}`);
     });
   }
 }
