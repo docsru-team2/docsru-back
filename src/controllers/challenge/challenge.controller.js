@@ -12,7 +12,11 @@ export class ChallengeController extends BaseController {
   }
 
   routes() {
-    this.router.get('/', (req, res, next) => this.getAll(req, res, next));
+    this.router.get(
+      '/',
+      // needsLogin, 로그인 여부 체크
+      (req, res, next) => this.getAll(req, res, next),
+    );
     this.router.get('/:id', (req, res, next) => this.getOne(req, res, next));
 
     this.router.post('/', needsLogin, (req, res, next) =>
@@ -25,12 +29,25 @@ export class ChallengeController extends BaseController {
     return this.router;
   }
 
-  async findAll(req, res) {
-    const challenges = await this.#challengeService.listChallenges();
-    res.status(HTTP_STATUS.OK).json(challenges);
+  async getAll(req, res, next) {
+    try {
+      const { page, limit, sort, keyword, reviewStatus } = req.query;
+
+      const result = await this.#challengeService.getPublicChallenges({
+        page: Number(page) || 1,
+        limit: Number(limit) || 10,
+        sort,
+        keyword,
+        reviewStatus,
+      });
+
+      res.status(HTTP_STATUS.OK).json(result);
+    } catch (error) {
+      next(error);
+    }
   }
 
-  async findById(req, res) {
+  async getOne(req, res) {
     const { id } = req.params;
     const challenge = await this.#challengeService.getChallengeDetail(id);
     res.status(HTTP_STATUS.OK).json(challenge);
@@ -73,13 +90,13 @@ export class ChallengeController extends BaseController {
       id,
       req.user.id,
       {
-      title,
-      sourceUrl,
-      field,
-      documentType,
-      description,
-      deadline,
-      maxParticipants,
+        title,
+        sourceUrl,
+        field,
+        documentType,
+        description,
+        deadline,
+        maxParticipants,
       },
     );
     res.status(HTTP_STATUS.OK).json(updatedChallenge);
