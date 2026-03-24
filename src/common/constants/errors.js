@@ -23,6 +23,11 @@ export const ERROR_CODE = {
     code: 'INVALID_INPUT',
     message: '유효하지 않은 입력값',
   },
+  UNSUPPORTED_SOCIAL_PROVIDER: {
+    status: HTTP_STATUS.BAD_REQUEST,
+    code: 'UNSUPPORTED_SOCIAL_PROVIDER',
+    message: '지원하지 않는 소셜 로그인입니다.',
+  },
 
   // 401 Unauthorized
   AUTH_UNAUTHORIZED: {
@@ -35,10 +40,15 @@ export const ERROR_CODE = {
     code: 'AUTH_INVALID_CREDENTIALS',
     message: '이메일 또는 비밀번호 불일치',
   },
-    AUTH_INVALID_TOKEN: {
+  AUTH_INVALID_TOKEN: {
     status: HTTP_STATUS.UNAUTHORIZED,
     code: 'AUTH_INVALID_TOKEN',
     message: '유효하지 않은 토큰',
+  },
+  SOCIAL_AUTH_FAILED: {
+    status: HTTP_STATUS.UNAUTHORIZED,
+    code: 'SOCIAL_AUTH_FAILED',
+    message: '소셜 로그인 실패',
   },
 
   // 403 Forbidden

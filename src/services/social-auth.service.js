@@ -1,5 +1,5 @@
 import { config } from '#config';
-import { ERROR_MESSAGE } from '#constants';
+import { ERROR_CODE } from '#constants';
 import { BadRequestException, UnauthorizedException } from '#exceptions';
 
 export class SocialAuthService {
@@ -64,9 +64,7 @@ export class SocialAuthService {
       // case 'naver':
       //   return this.#getNaverProfile(code, state);
       default:
-        throw new BadRequestException(
-          ERROR_MESSAGE.UNSUPPORTED_SOCIAL_PROVIDER,
-        );
+        throw new BadRequestException(ERROR_CODE.UNSUPPORTED_SOCIAL_PROVIDER);
     }
   }
 
@@ -141,9 +139,7 @@ export class SocialAuthService {
         response.statusText ??
         defaultErrorMessage;
 
-      throw new UnauthorizedException(
-        message ?? ERROR_MESSAGE.SOCIAL_AUTH_FAILED,
-      );
+      throw new UnauthorizedException(message ?? ERROR_CODE.SOCIAL_AUTH_FAILED);
     }
 
     return payload;
