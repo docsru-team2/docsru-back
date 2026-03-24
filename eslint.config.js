@@ -9,6 +9,8 @@ export default [
       globals: {
         console: 'readonly',
         process: 'readonly',
+        fetch: 'readonly',
+        URLSearchParams: 'readonly',
       },
     },
     rules: {
@@ -30,7 +32,6 @@ export default [
     languageOptions: {
       globals: {
         document: 'readonly',
-        fetch: 'readonly',
       },
     },
   },
