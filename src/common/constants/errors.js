@@ -28,6 +28,11 @@ export const ERROR_CODE = {
     code: 'UNSUPPORTED_SOCIAL_PROVIDER',
     message: '지원하지 않는 소셜 로그인입니다.',
   },
+  SOCIAL_AUTH_CODE_REQUIRED: {
+    status: HTTP_STATUS.BAD_REQUEST,
+    code: 'SOCIAL_AUTH_CODE_REQUIRED',
+    message: '잘못된 소셜 로그인 코드입니다.',
+  },
 
   // 401 Unauthorized
   AUTH_UNAUTHORIZED: {

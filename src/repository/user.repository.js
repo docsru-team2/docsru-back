@@ -69,4 +69,24 @@ export class UserRepository {
       },
     });
   }
+
+  findBySocialAccount(provider, providerAccountId) {
+    return this.#prisma.user.findFirst({
+      where: { provider, providerAccountId },
+      select: this.#selectedUserData,
+    });
+  }
+
+  createWithSocialAccount(data) {
+    return this.#prisma.user.create({
+      data,
+      select: this.#selectedUserData,
+    });
+  }
+
+  connectSocialAccount(email, { provider, providerAccountId }) {
+    return this.#prisma.socialAccount.create({
+      data: { provider, providerAccountId, email },
+    });
+  }
 }

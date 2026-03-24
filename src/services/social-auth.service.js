@@ -37,7 +37,7 @@ export class SocialAuthService {
 
     // 새 유저 생성(기본값 일반 유저)
     if (!existingUser) {
-      return this.#userRepository.create({
+      return this.#userRepository.createWithSocialAccount({
         email,
         nickname: profile.name || `독수르_${profile.id.slice(0, 5)}`, // 닉네임 없으면 임의로 만들어넣기
         provider: provider.toUpperCase(),
