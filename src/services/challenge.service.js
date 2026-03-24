@@ -1,7 +1,11 @@
+import { NotFoundException } from '#exceptions';
+import { ERROR_CODE } from '#constants'; 
+
 export class ChallengeService {
-  constructor({ challengeRepository, userRepository }) {
-    this.challengeRepository = challengeRepository;
-    this.userRepository = userRepository;
+  #challengeRepository;
+
+  constructor({ challengeRepository }) {
+    this.#challengeRepository = challengeRepository;
   }
 
   // 사용자용 목록 조회
@@ -20,14 +24,16 @@ export class ChallengeService {
     });
   }
 
+  async listChallenges() {
+    return await this.#challengeRepository.findAll();
+  }
+
   // 상세 조회
   async getChallengeDetail(id) {
     const challenge = await this.challengeRepository.findById(id);
-
     if (!challenge) {
-      throw new Error('챌린지를 찾을 수 없습니다.');
+      throw new NotFoundException(ERROR_CODE.CHALLENGE_NOT_FOUND);
     }
-
     return challenge;
   }
 

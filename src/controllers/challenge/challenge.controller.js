@@ -1,6 +1,5 @@
 import { BaseController } from '#controllers/base.controller.js';
 import { HTTP_STATUS } from '#constants';
-import { needsLogin } from '#middlewares';
 import {} from './dto/challenge.dto.js';
 
 export class ChallengeController extends BaseController {
@@ -12,17 +11,11 @@ export class ChallengeController extends BaseController {
   }
 
   routes() {
-    this.router.get(
-      '/',
-      // needsLogin, 로그인 여부 체크
-      (req, res, next) => this.getAll(req, res, next),
-    );
+    this.router.get('/', (req, res, next) => this.getAll(req, res, next));
     this.router.get('/:id', (req, res, next) => this.getOne(req, res, next));
 
-    this.router.post('/', needsLogin, (req, res, next) =>
-      this.create(req, res, next),
-    );
-    this.router.post('/:id/participants', needsLogin, (req, res, next) =>
+    this.router.post('/', (req, res, next) => this.create(req, res, next));
+    this.router.post('/:id/participants', (req, res, next) =>
       this.join(req, res, next),
     );
 
