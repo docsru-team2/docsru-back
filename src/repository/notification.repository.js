@@ -1,3 +1,18 @@
+const notificationSelect = {
+  id: true,
+  type: true,
+  content: true,
+  isRead: true,
+  targetId: true,
+  actorUserId: true,
+  createdAt: true,
+};
+
+const notificationToReadSelect = {
+  id: true,
+  isRead: true,
+};
+
 export class NotificationRepository {
   #prisma;
 
@@ -5,59 +20,49 @@ export class NotificationRepository {
     this.#prisma = prisma;
   }
 
-  findAll() {
-    return this.#prisma.notification.findMany({
-      select: {
-        id: true,
+  //내 알림 목록 조회
+  findAll(id, { page = 1, limit = 10 }) {
+    const skip = (page - 1) * limit;
+    const where = { userId: id };
 
-        createdAt: true,
-      },
-    });
+    return Promise.all([
+      this.#prisma.notification.findMany({
+        where,
+        skip,
+        take: limit,
+        select: notificationSelect,
+      }),
+      this.#prisma.notification.count({ where }), // totalCount
+      this.#prisma.notification.count({ where: { ...where, isRead: false } }), // unreadCount
+    ]);
   }
 
-  findById(id) {
-    return this.#prisma.notification.findUnique({
-      where: {
-        id: Number(id),
-      },
-      select: {
-        id: true,
-
-        createdAt: true,
-      },
-    });
-  }
-
+  // 알림 생성 (내부에서만 호출)
   create(data) {
     return this.#prisma.notification.create({
       data,
-      select: {
-        id: true,
-
-        createdAt: true,
-      },
+      select: notificationSelect,
     });
   }
 
-  update(id, data) {
+  //읽음 처리 (단건)
+  updateToRead(id) {
     return this.#prisma.notification.update({
       where: {
-        id: Number(id),
+        id,
       },
-      data,
-      select: {
-        id: true,
-
-        createdAt: true,
-      },
+      data: { isRead: true },
+      select: notificationToReadSelect,
     });
   }
 
-  delete(id) {
-    return this.#prisma.notification.delete({
+  // 읽음 처리 (전체)
+  updateAllToRead(userId) {
+    return this.#prisma.notification.updateMany({
       where: {
-        id: Number(id),
+        userId,
       },
+      data: { isRead: true },
     });
   }
 }
