@@ -16,8 +16,15 @@ export class AuthService {
     this.#tokenProvider = tokenProvider;
   }
 
-  //회원가입
-  async signUp({ email, password, nickname, userType, provider, grade }) {
+  //회원가입(기본값 일반 유저)
+  async signUp({
+    email,
+    password,
+    nickname,
+    userType = 'USER',
+    provider = 'LOCAL',
+    grade = 'NORMAL',
+  }) {
     const existingUser = await this.#userRepository.findByEmail(email);
     if (existingUser) {
       throw new ConflictException(ERROR_CODE.USER_EMAIL_ALREADY_EXISTS);
@@ -29,8 +36,8 @@ export class AuthService {
       email,
       nickname,
       passwordHash: hashedPassword,
-      userType,
       provider,
+      userType,
       grade,
     });
 

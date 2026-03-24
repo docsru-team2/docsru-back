@@ -8,6 +8,7 @@ export const errorHandler = (err, req, res, _next) => {
   if (err instanceof HttpException) {
     return res.status(err.statusCode).json({
       success: false,
+      code: err.errorCode,
       message: err.message,
       ...(err.details && { details: err.details }),
     });
