@@ -23,23 +23,6 @@ const submissionDetailSelect = {
   },
 };
 
-const draftSelect = {
-  id: true,
-  challengeId: true,
-  userId: true,
-  title: true,
-  content: true,
-  createdAt: true,
-  updatedAt: true,
-};
-
-const submissionLikeSelect = {
-  id: true,
-  userId: true,
-  submissionId: true,
-  createdAt: true,
-};
-
 export class SubmissionRepository {
   #prisma;
 
@@ -88,19 +71,6 @@ export class SubmissionRepository {
     return all.filter((x) => x._count.likes === top1);
   }
 
-  //임시 저장 - 조회
-  findDraft(id) {
-    const where = { challengeId: id };
-
-    return Promise.all([
-      this.#prisma.draft.findMany({
-        where,
-        select: draftSelect,
-      }),
-      this.#prisma.draft.count({ where }),
-    ]);
-  }
-
   //작업물 상세 조회
   findById(id) {
     return this.#prisma.submission.findUnique({
@@ -123,22 +93,6 @@ export class SubmissionRepository {
         challengeId: true,
         isDeleted: true,
       },
-    });
-  }
-
-  //작업물 추천 +1
-  createLike(submissionId, userId) {
-    return this.#prisma.submissionLike.create({
-      data: { submissionId, userId },
-      select: submissionLikeSelect,
-    });
-  }
-
-  //임시 저장 - 생성
-  createDraft(challengeId, userId, data) {
-    return this.#prisma.draft.create({
-      data: { ...data, challengeId, userId },
-      select: draftSelect,
     });
   }
 
@@ -167,30 +121,6 @@ export class SubmissionRepository {
         id: true,
         isDeleted: true,
         updatedAt: true,
-      },
-    });
-  }
-
-  //작업물 추천 취소
-  deleteLike(submissionId, userId) {
-    return this.#prisma.submissionLike.delete({
-      where: {
-        submissionId_userId: { submissionId, userId },
-      },
-      select: {
-        id: true,
-      },
-    });
-  }
-
-  //임시 저장 - 삭제
-  deleteDraft(id) {
-    return this.#prisma.draft.delete({
-      where: {
-        id,
-      },
-      select: {
-        challengeId: true,
       },
     });
   }
