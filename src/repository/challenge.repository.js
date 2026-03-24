@@ -34,20 +34,6 @@ const challengeDetailSelect = {
   },
 };
 
-const participantsList = {
-  id: true,
-  challengeId: true,
-  userId: true,
-  createdAt: true,
-  updatedAt: true,
-};
-
-const author = {
-  id: true,
-  nickname: true,
-  grade: true,
-};
-
 const ORDER_BY_MAP = {
   CREATED_DESC: { createdAt: 'desc' }, //신청일 최신순
   CREATED_ASC: { createdAt: 'asc' }, //신청일 오래된 순
@@ -155,44 +141,11 @@ export class ChallengeRepository {
     });
   }
 
-  //챌린지 참여자 목록 조회
-  findParticipantsByChallengeId(challengeId) {
-    return this.#prisma.challengeParticipant.findMany({
-      where: {
-        challengeId,
-      },
-      select: {
-        participants: {
-          select: {
-            user: {
-              select: author,
-            },
-          },
-        },
-        submissions: {
-          select: {
-            id: true,
-          },
-        },
-        createdAt: true,
-      },
-    });
-  }
-
   // 챌린지 신청 생성
   create(data) {
     return this.#prisma.challenge.create({
       data,
       select: challengeDetailSelect,
-    });
-  }
-  //승인된 챌린지 참여
-  joinChallenge(challengeId, userId) {
-    return this.#prisma.challenge.create({
-      data: { challengeId, userId },
-      select: {
-        participants: participantsList,
-      },
     });
   }
 

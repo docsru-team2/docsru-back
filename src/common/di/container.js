@@ -9,8 +9,12 @@ import { prisma } from '#db/prisma.js';
 import {
   UserRepository,
   ChallengeRepository,
+  ChallengeParticipantRepository,
+  DraftRepository,
   SubmissionRepository,
+  SubmissionLikeRepository,
   NotificationRepository,
+  FeedbackRepository,
 } from '#repository';
 import {
   AuthService,
@@ -45,10 +49,22 @@ export const createContainer = () => {
     challengeRepository: asClass(ChallengeRepository, {
       lifetime: Lifetime.SINGLETON,
     }),
+    ChallengeParticipantRepository: asClass(ChallengeParticipantRepository, {
+      lifetime: Lifetime.SINGLETON,
+    }),
+    draftRepository: asClass(DraftRepository, {
+      lifetime: Lifetime.SINGLETON,
+    }),
     submissionRepository: asClass(SubmissionRepository, {
       lifetime: Lifetime.SINGLETON,
     }),
+    submissionLikeRepository: asClass(SubmissionLikeRepository, {
+      lifetime: Lifetime.SINGLETON,
+    }),
     notificationRepository: asClass(NotificationRepository, {
+      lifetime: Lifetime.SINGLETON,
+    }),
+    feedbackRepository: asClass(FeedbackRepository, {
       lifetime: Lifetime.SINGLETON,
     }),
     passwordProvider: asClass(PasswordProvider, {
