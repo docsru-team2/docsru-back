@@ -14,6 +14,7 @@ import {
   SubmissionRepository,
   SubmissionLikeRepository,
   NotificationRepository,
+  FeedbackRepository,
 } from '#repository';
 import {
   AuthService,
@@ -60,6 +61,9 @@ export const createContainer = () => {
       lifetime: Lifetime.SINGLETON,
     }),
     notificationRepository: asClass(NotificationRepository, {
+      lifetime: Lifetime.SINGLETON,
+    }),
+    feedbackRepository: asClass(FeedbackRepository, {
       lifetime: Lifetime.SINGLETON,
     }),
     passwordProvider: asClass(PasswordProvider, {
