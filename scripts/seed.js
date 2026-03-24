@@ -6,7 +6,7 @@ import bcrypt from 'bcrypt';
 
 const SEED_PASSWORD = 'test1!';
 
-const FIELDS = ['NEXT_JS', 'MODERN_JS', 'API', 'WEB', 'CAREER', 'ETC'];
+const FIELDS = ['NEXT_JS', 'MODERN_JS', 'API', 'WEB', 'CAREER'];
 const DOCUMENT_TYPES = ['OFFICIAL_DOC', 'BLOG', 'BOOK', 'ETC'];
 
 // ──────────────────────── 수량 설정 ────────────────────────
