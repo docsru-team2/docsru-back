@@ -162,9 +162,7 @@ export class ChallengeRepository {
 
     return Promise.all([
       this.#prisma.challengeParticipant.findMany({
-        where: {
-          id,
-        },
+        where,
         skip,
         take: limit,
         select: {
@@ -197,7 +195,7 @@ export class ChallengeRepository {
 
   //승인된 챌린지 참여
   joinChallenge(challengeId, userId) {
-    return this.#prisma.challenge.create({
+    return this.#prisma.challengeParticipant.create({
       data: { challengeId, userId },
       select: {
         participants: participantsList,
