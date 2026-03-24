@@ -156,27 +156,35 @@ export class ChallengeRepository {
   }
 
   //챌린지 참여자 목록 조회
-  findParticipantsByChallengeId(challengeId) {
-    return this.#prisma.challengeParticipant.findMany({
-      where: {
-        challengeId,
-      },
-      select: {
-        participants: {
-          select: {
-            user: {
-              select: author,
+  findParticipantsByChallengeId(id, { page = 1, limit = 10 }) {
+    const skip = (page - 1) * limit;
+    const where = { challengeId: id };
+
+    return Promise.all([
+      this.#prisma.challengeParticipant.findMany({
+        where: {
+          id,
+        },
+        skip,
+        take: limit,
+        select: {
+          participants: {
+            select: {
+              user: {
+                select: author,
+              },
             },
           },
-        },
-        submissions: {
-          select: {
-            id: true,
+          submissions: {
+            select: {
+              id: true,
+            },
           },
+          createdAt: true,
         },
-        createdAt: true,
-      },
-    });
+      }),
+      this.#prisma.challengeParticipant.count({ where }),
+    ]);
   }
 
   // 챌린지 신청 생성
@@ -186,6 +194,7 @@ export class ChallengeRepository {
       select: challengeDetailSelect,
     });
   }
+
   //승인된 챌린지 참여
   joinChallenge(challengeId, userId) {
     return this.#prisma.challenge.create({
