@@ -40,11 +40,11 @@ export class UserController extends BaseController {
   }
 
   async create(req, res) {
-    const { email, password, name } = req.body;
+    const { email, password, nickname } = req.body;
     const newUser = await this.#userService.registerUser({
       email,
       password,
-      name,
+      nickname,
     });
     res.status(HTTP_STATUS.CREATED).json(newUser);
   }

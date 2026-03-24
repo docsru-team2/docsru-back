@@ -16,7 +16,15 @@ export class AuthService {
     this.#tokenProvider = tokenProvider;
   }
 
-  async signUp({ email, password, name }) {
+  //회원가입(기본값 일반 유저)
+  async signUp({
+    email,
+    password,
+    nickname,
+    userType = 'USER',
+    provider = 'LOCAL',
+    grade = 'NORMAL',
+  }) {
     const existingUser = await this.#userRepository.findByEmail(email);
     if (existingUser) {
       throw new ConflictException(ERROR_CODE.USER_EMAIL_ALREADY_EXISTS);
@@ -26,15 +34,18 @@ export class AuthService {
 
     const user = await this.#userRepository.create({
       email,
-      password: hashedPassword,
-      name,
+      nickname,
+      passwordHash: hashedPassword,
+      provider,
+      userType,
+      grade,
     });
 
     const tokens = this.#tokenProvider.generateTokens(user);
-
     return { user, tokens };
   }
 
+  //로그인
   async login({ email, password }) {
     const authUser = await this.#userRepository.findByEmail(email, {
       includePassword: true,
@@ -46,7 +57,7 @@ export class AuthService {
 
     const isPasswordValid = await this.#passwordProvider.compare(
       password,
-      authUser.password,
+      authUser.passwordHash,
     );
     if (!isPasswordValid) {
       throw new UnauthorizedException(ERROR_CODE.AUTH_INVALID_CREDENTIALS);
@@ -62,6 +73,7 @@ export class AuthService {
     return { user, tokens };
   }
 
+  //내 정보 조회
   async getMe(userId) {
     const user = await this.#userRepository.findById(userId);
     if (!user) {
@@ -70,6 +82,7 @@ export class AuthService {
     return user;
   }
 
+  //토큰 유효성 검사 및 재발급
   async refreshTokens(refreshToken) {
     const payload = this.#tokenProvider.verifyRefreshToken(refreshToken);
     if (!payload) {
