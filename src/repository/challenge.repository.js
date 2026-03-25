@@ -9,6 +9,13 @@ const challengeListSelect = {
   deadline: true,
   createdAt: true,
   updatedAt: true,
+  submissions: {
+    select: {
+      id: true,
+      title: true,
+      isDeleted: true,
+    },
+  },
 };
 
 const challengeDetailSelect = {
@@ -30,6 +37,13 @@ const challengeDetailSelect = {
     select: {
       id: true,
       nickname: true,
+    },
+  },
+  submissions: {
+    select: {
+      id: true,
+      title: true,
+      isDeleted: true,
     },
   },
 };
@@ -150,18 +164,20 @@ export class ChallengeRepository {
   }
 
   // 관리자 - 검토 상태 변경 (승인/거절)
-  updateReviewStatus(id, { reviewStatus, rejectReason }) {
+  updateReviewStatus(id, { reviewStatus, progressStatus, rejectReason }) {
     return this.#prisma.challenge.update({
       where: { id },
       data: {
         reviewStatus,
-        ...(rejectReason && { rejectReason }),
+        progressStatus,
+        rejectReason: reviewStatus === 'APPROVED' ? null : rejectReason,
+        deleteReason: null,
       },
       select: challengeDetailSelect,
     });
   }
 
-  // 유저 - 챌린지 신청 수정
+  // 유저, 어드민 - 챌린지 신청 수정
   update(id, data) {
     return this.#prisma.challenge.update({
       where: {
@@ -190,6 +206,8 @@ export class ChallengeRepository {
       where: { id },
       data: {
         reviewStatus: 'DELETED',
+        progressStatus: null,
+        rejectReason: null,
         deleteReason,
       },
       select: challengeDetailSelect,

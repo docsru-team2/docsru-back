@@ -23,6 +23,7 @@ import {
   ChallengeService,
   SubmissionService,
   NotificationService,
+  AdminService,
 } from '#services';
 import {
   AuthController,
@@ -86,6 +87,9 @@ export const createContainer = () => {
       lifetime: Lifetime.SINGLETON,
     }),
     notificationService: asClass(NotificationService, {
+      lifetime: Lifetime.SINGLETON,
+    }),
+    adminService: asClass(AdminService, {
       lifetime: Lifetime.SINGLETON,
     }),
 
