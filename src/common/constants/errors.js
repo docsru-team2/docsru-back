@@ -27,6 +27,7 @@ export const ERROR_CODE = {
     status: HTTP_STATUS.BAD_REQUEST,
     code: 'REJECT_REASON_MISSING',
     message: '거절 사유 없음',
+  },
   UNSUPPORTED_SOCIAL_PROVIDER: {
     status: HTTP_STATUS.BAD_REQUEST,
     code: 'UNSUPPORTED_SOCIAL_PROVIDER',
