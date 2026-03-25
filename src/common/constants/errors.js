@@ -23,6 +23,11 @@ export const ERROR_CODE = {
     code: 'INVALID_INPUT',
     message: '유효하지 않은 입력값',
   },
+  REJECT_REASON_MISSING: {
+    status: HTTP_STATUS.BAD_REQUEST,
+    code: 'REJECT_REASON_MISSING',
+    message: '거절 사유 없음',
+  },
   UNSUPPORTED_SOCIAL_PROVIDER: {
     status: HTTP_STATUS.BAD_REQUEST,
     code: 'UNSUPPORTED_SOCIAL_PROVIDER',
