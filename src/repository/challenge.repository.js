@@ -1,39 +1,3 @@
-const challengeListSelect = {
-  id: true,
-  title: true,
-  field: true,
-  documentType: true,
-  maxParticipants: true,
-  reviewStatus: true,
-  progressStatus: true,
-  deadline: true,
-  createdAt: true,
-  updatedAt: true,
-};
-
-const challengeDetailSelect = {
-  id: true,
-  title: true,
-  sourceUrl: true,
-  field: true,
-  documentType: true,
-  description: true,
-  deadline: true,
-  maxParticipants: true,
-  reviewStatus: true,
-  progressStatus: true,
-  rejectReason: true,
-  deleteReason: true,
-  createdAt: true,
-  updatedAt: true,
-  creator: {
-    select: {
-      id: true,
-      nickname: true,
-    },
-  },
-};
-
 const ORDER_BY_MAP = {
   CREATED_DESC: { createdAt: 'desc' }, //신청일 최신순
   CREATED_ASC: { createdAt: 'asc' }, //신청일 오래된 순
@@ -51,9 +15,36 @@ export class ChallengeRepository {
   constructor({ prisma }) {
     this.#prisma = prisma;
   }
+  get #challengeListSelect() {
+    return {
+      id: true,
+      title: true,
+      field: true,
+      documentType: true,
+      maxParticipants: true,
+      reviewStatus: true,
+      progressStatus: true,
+      deadline: true,
+      createdAt: true,
+      updatedAt: true,
+    };
+  }
+
+  get #challengeDetailSelect() {
+    return {
+      ...this.#challengeListSelect,
+      sourceUrl: true,
+      description: true,
+      rejectReason: true,
+      deleteReason: true,
+      creator: {
+        select: { id: true, nickname: true },
+      },
+    };
+  }
 
   // 전체 챌린지 목록 조회 (관리자 or 로그인 한 유저)
-  findAll({
+  async findAll({
     page = 1,
     limit = 10,
     sort = 'CREATED_DESC',
@@ -76,13 +67,13 @@ export class ChallengeRepository {
           : {}),
     };
 
-    return Promise.all([
+    return await Promise.all([
       this.#prisma.challenge.findMany({
         where,
         skip,
         take: limit,
         orderBy: orderByCheck(sort),
-        select: challengeListSelect,
+        select: this.#challengeListSelect,
       }),
       this.#prisma.challenge.count({ where }),
     ]);
@@ -117,7 +108,7 @@ export class ChallengeRepository {
         where,
         skip,
         take: limit,
-        select: challengeListSelect,
+        select: this.#challengeListSelect,
       }),
       this.#prisma.challenge.count({ where }),
     ]);
@@ -137,7 +128,7 @@ export class ChallengeRepository {
               ],
             }),
       },
-      select: challengeDetailSelect,
+      select: this.#challengeDetailSelect,
     });
   }
 
@@ -145,7 +136,7 @@ export class ChallengeRepository {
   create(data) {
     return this.#prisma.challenge.create({
       data,
-      select: challengeDetailSelect,
+      select: this.#challengeDetailSelect,
     });
   }
 
@@ -157,7 +148,7 @@ export class ChallengeRepository {
         reviewStatus,
         ...(rejectReason && { rejectReason }),
       },
-      select: challengeDetailSelect,
+      select: this.#challengeDetailSelect,
     });
   }
 
@@ -168,7 +159,7 @@ export class ChallengeRepository {
         id,
       },
       data,
-      select: challengeDetailSelect,
+      select: this.#challengeDetailSelect,
     });
   }
 
@@ -192,7 +183,7 @@ export class ChallengeRepository {
         reviewStatus: 'DELETED',
         deleteReason,
       },
-      select: challengeDetailSelect,
+      select: this.#challengeDetailSelect,
     });
   }
 }
