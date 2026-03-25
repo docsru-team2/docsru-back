@@ -111,12 +111,12 @@ export class SubmissionRepository {
   }
 
   //작업물 삭제 (소프트 삭제)
-  updateToDelete(id) {
+  updateToDeleted(id, { isDeleted }) {
     return this.#prisma.submission.update({
       where: {
         id,
       },
-      data: { isDeleted: true },
+      data: { isDeleted },
       select: {
         id: true,
         isDeleted: true,

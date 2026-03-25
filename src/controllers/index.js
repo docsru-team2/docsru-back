@@ -37,7 +37,11 @@ export class Controller extends BaseController {
   routes() {
     this.router.use('/auth', this.#authController.routes());
     this.router.use('/user', needsLogin, this.#userController.routes());
-    this.router.use('/admin', needsLogin, this.#adminController.routes());
+    this.router.use(
+      '/admin',
+      // needsLogin,
+      this.#adminController.routes(),
+    );
     this.router.use('/challenges', this.#challengeController.routes());
     this.router.use(
       '/submissions',

@@ -23,6 +23,11 @@ export const ERROR_CODE = {
     code: 'INVALID_INPUT',
     message: '유효하지 않은 입력값',
   },
+  REJECT_REASON_MISSING: {
+    status: HTTP_STATUS.BAD_REQUEST,
+    code: 'REJECT_REASON_MISSING',
+    message: '거절 사유 없음',
+  },
 
   // 401 Unauthorized
   AUTH_UNAUTHORIZED: {
@@ -35,7 +40,7 @@ export const ERROR_CODE = {
     code: 'AUTH_INVALID_CREDENTIALS',
     message: '이메일 또는 비밀번호 불일치',
   },
-    AUTH_INVALID_TOKEN: {
+  AUTH_INVALID_TOKEN: {
     status: HTTP_STATUS.UNAUTHORIZED,
     code: 'AUTH_INVALID_TOKEN',
     message: '유효하지 않은 토큰',
@@ -59,6 +64,11 @@ export const ERROR_CODE = {
     code: 'FEEDBACK_NOT_FOUND',
     message: '피드백 없음',
   },
+  SUBMISSION_NOT_FOUND: {
+    status: HTTP_STATUS.NOT_FOUND,
+    code: 'SUBMISSION_NOT_FOUND',
+    message: '작업물 없음',
+  },
   SUBMISSION_LIKE_NOT_FOUND: {
     status: HTTP_STATUS.NOT_FOUND,
     code: 'SUBMISSION_LIKE_NOT_FOUND',
@@ -68,6 +78,11 @@ export const ERROR_CODE = {
     status: HTTP_STATUS.NOT_FOUND,
     code: 'DRAFT_NOT_FOUND',
     message: '임시 저장 없음',
+  },
+  CHALLENGE_NOT_FOUND: {
+    status: HTTP_STATUS.NOT_FOUND,
+    code: 'CHALLENGE_NOT_FOUND',
+    message: '챌린지 없음',
   },
   NOTIFICATION_NOT_FOUND: {
     status: HTTP_STATUS.NOT_FOUND,
