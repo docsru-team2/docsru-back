@@ -1,17 +1,3 @@
-const participantsList = {
-  id: true,
-  challengeId: true,
-  userId: true,
-  createdAt: true,
-  updatedAt: true,
-};
-
-const author = {
-  id: true,
-  nickname: true,
-  grade: true,
-};
-
 export class ChallengeParticipantRepository {
   #prisma;
 
@@ -19,42 +5,63 @@ export class ChallengeParticipantRepository {
     this.#prisma = prisma;
   }
 
+  get #participantSelect() {
+    return {
+      id: true,
+      challengeId: true,
+      userId: true,
+      user: {
+        select: {
+          id: true,
+          nickname: true,
+          grade: true,
+          _count: { /* prisma aggregate method: 관계 필드 count용임 */
+            select: {
+              submissionLike: true,
+            },
+          },
+        },
+      },
+      createdAt: true,
+      updatedAt: true,
+    };
+  }
+
   //챌린지 참여자 목록 조회
-  findParticipantsByChallengeId(id, { page = 1, limit = 10 }) {
+  async findAllByChallengeId(
+    id,
+    { page = 1, limit = 10 },
+    orderBy = { createdAt: 'desc' }, /* 혹시몰라서 넣었음 */
+  ) {
     const skip = (page - 1) * limit;
     const where = { challengeId: id };
 
-    return Promise.all([
+    const [data, totalCount] = await Promise.all([
       this.#prisma.challengeParticipant.findMany({
         where,
         skip,
         take: limit,
-        select: {
-          participants: {
-            select: {
-              user: {
-                select: author,
-              },
-            },
-          },
-          submissions: {
-            select: {
-              id: true,
-            },
-          },
-          createdAt: true,
-        },
+        select: this.#participantSelect,
+        orderBy,
       }),
       this.#prisma.challengeParticipant.count({ where }),
     ]);
+    return { data, totalCount };
   }
 
   //승인된 챌린지 참여
   joinChallenge(challengeId, userId) {
     return this.#prisma.challengeParticipant.create({
       data: { challengeId, userId },
-      select: {
-        participants: participantsList,
+      select: this.#participantSelect,
+    });
+  }
+
+  //챌린지 참여 여부 확인
+  findIfUserInChallenge(challengeId, userId) {
+    return this.#prisma.challengeParticipant.findUnique({
+      where: {
+        challengeId_userId: { challengeId, userId },
       },
     });
   }
