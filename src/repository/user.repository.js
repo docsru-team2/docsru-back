@@ -5,28 +5,31 @@ export class UserRepository {
     this.#prisma = prisma;
   }
 
+  get #selectedUserData() {
+    return {
+      id: true,
+      email: true,
+      nickname: true,
+      provider: true,
+      userType: true,
+      grade: true,
+      createdAt: true,
+      updatedAt: true,
+    };
+  }
+
   findAll() {
     return this.#prisma.user.findMany({
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        createdAt: true,
-      },
+      select: this.#selectedUserData,
     });
   }
 
   findById(id) {
     return this.#prisma.user.findUnique({
       where: {
-        id: Number(id),
+        id: id,
       },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        createdAt: true,
-      },
+      select: this.#selectedUserData,
     });
   }
 
@@ -36,11 +39,8 @@ export class UserRepository {
         email,
       },
       select: {
-        id: true,
-        email: true,
-        name: true,
-        ...(includePassword ? { password: true } : {}),
-        createdAt: true,
+        ...this.#selectedUserData,
+        ...(includePassword ? { passwordHash: true } : {}),
       },
     });
   }
@@ -48,35 +48,45 @@ export class UserRepository {
   create(data) {
     return this.#prisma.user.create({
       data,
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        createdAt: true,
-      },
+      select: this.#selectedUserData,
     });
   }
 
   update(id, data) {
     return this.#prisma.user.update({
       where: {
-        id: Number(id),
+        id: id,
       },
       data,
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        createdAt: true,
-      },
+      select: this.#selectedUserData,
     });
   }
 
   delete(id) {
     return this.#prisma.user.delete({
       where: {
-        id: Number(id),
+        id: id,
       },
+    });
+  }
+
+  findBySocialAccount(provider, providerAccountId) {
+    return this.#prisma.user.findFirst({
+      where: { provider, providerAccountId },
+      select: this.#selectedUserData,
+    });
+  }
+
+  createWithSocialAccount(data) {
+    return this.#prisma.user.create({
+      data,
+      select: this.#selectedUserData,
+    });
+  }
+
+  connectSocialAccount(email, { provider, providerAccountId }) {
+    return this.#prisma.socialAccount.create({
+      data: { provider, providerAccountId, email },
     });
   }
 }

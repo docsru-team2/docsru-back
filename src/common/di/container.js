@@ -18,6 +18,7 @@ import {
 } from '#repository';
 import {
   AuthService,
+  SocialAuthService,
   UserService,
   ChallengeService,
   SubmissionService,
@@ -75,6 +76,9 @@ export const createContainer = () => {
 
     // 2. Services
     authService: asClass(AuthService, { lifetime: Lifetime.SINGLETON }),
+    socialAuthService: asClass(SocialAuthService, {
+      lifetime: Lifetime.SINGLETON,
+    }),
     userService: asClass(UserService, { lifetime: Lifetime.SINGLETON }),
     challengeService: asClass(ChallengeService, {
       lifetime: Lifetime.SINGLETON,

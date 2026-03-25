@@ -1,5 +1,5 @@
 import { config } from '#config';
-import { DAY_IN_MS, HOUR_IN_MS, MINUTE_IN_MS } from '#constants';
+import { DAY_IN_MS } from '#constants';
 
 export class CookieProvider {
   setAuthCookies(res, tokens) {
@@ -8,7 +8,7 @@ export class CookieProvider {
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
       secure: config.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: config.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge: 1 * DAY_IN_MS,
       path: '/',
     });
@@ -16,7 +16,7 @@ export class CookieProvider {
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: config.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: config.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge: 14 * DAY_IN_MS,
       path: '/',
     });
