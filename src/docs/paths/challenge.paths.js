@@ -19,7 +19,7 @@ export const challengePaths = {
     get: {
       tags: ['Challenge'],
       summary: '챌린지 목록 조회',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       parameters: challengeListQueryParams,
       responses: {
         200: {
@@ -44,7 +44,7 @@ export const challengePaths = {
     post: {
       tags: ['Challenge'],
       summary: '챌린지 신청',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       requestBody: {
         required: true,
         content: {
@@ -77,7 +77,7 @@ export const challengePaths = {
     get: {
       tags: ['Challenge'],
       summary: '챌린지 상세 조회',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       parameters: [challengeIdParam],
       responses: {
         200: { description: '챌린지 상세', content: { 'application/json': { schema: { $ref: '#/components/schemas/Challenge' } } } },
@@ -90,7 +90,7 @@ export const challengePaths = {
       tags: ['Challenge'],
       summary: '챌린지 수정',
       description: '챌린지 생성자만 수정 가능합니다.',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       parameters: [challengeIdParam],
       requestBody: {
         required: true,
@@ -123,7 +123,7 @@ export const challengePaths = {
       tags: ['Challenge'],
       summary: '챌린지 삭제',
       description: '챌린지 생성자만 삭제 가능합니다.',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       parameters: [challengeIdParam],
       responses: {
         204: { description: '챌린지 삭제 성공' },
@@ -138,7 +138,7 @@ export const challengePaths = {
     get: {
       tags: ['Challenge'],
       summary: '챌린지 참가자 목록 조회',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       parameters: [challengeIdParam],
       responses: {
         200: {
@@ -156,7 +156,7 @@ export const challengePaths = {
     post: {
       tags: ['Challenge'],
       summary: '챌린지 참여',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       parameters: [challengeIdParam],
       responses: {
         201: { description: '참여 성공' },
@@ -171,7 +171,7 @@ export const challengePaths = {
     get: {
       tags: ['Challenge'],
       summary: '내가 신청한 챌린지 목록',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       parameters: challengeListQueryParams,
       responses: {
         200: {
@@ -200,7 +200,7 @@ export const challengePaths = {
       tags: ['Challenge'],
       summary: '내가 진행 중인 챌린지 목록',
       description: '참여 중이며 progressStatus가 OPEN인 챌린지 목록을 반환합니다.',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       parameters: challengeListQueryParams,
       responses: {
         200: {
@@ -229,7 +229,7 @@ export const challengePaths = {
       tags: ['Challenge'],
       summary: '내가 완료한 챌린지 목록',
       description: '참여 중이며 progressStatus가 CLOSED인 챌린지 목록을 반환합니다.',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       parameters: challengeListQueryParams,
       responses: {
         200: {
