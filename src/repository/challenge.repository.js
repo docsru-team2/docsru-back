@@ -73,9 +73,18 @@ export class ChallengeRepository {
     sort = 'CREATED_DESC',
     keyword,
     reviewStatus,
+    viewType,
     isAdmin = false,
   }) {
     const skip = (page - 1) * limit;
+
+    const reviewStatusFilter =
+      !isAdmin || viewType === 'LIST'
+        ? { reviewStatus: 'APPROVED' }
+        : reviewStatus
+          ? { reviewStatus }
+          : {};
+
     const where = {
       ...(keyword?.trim() && {
         title: {
@@ -83,11 +92,7 @@ export class ChallengeRepository {
           mode: 'insensitive',
         },
       }),
-      ...(!isAdmin
-        ? { reviewStatus: 'APPROVED' }
-        : reviewStatus
-          ? { reviewStatus }
-          : {}),
+      ...reviewStatusFilter,
     };
 
     return Promise.all([
@@ -138,11 +143,13 @@ export class ChallengeRepository {
   }
 
   // 챌린지 상세 조회
-  findById(id, { userId, role }) {
-    return this.#prisma.challenge.findFirst({
+  async findById(id, { userId, role }) {
+    const isAdmin = role === 'ADMIN';
+
+    const challenge = await this.#prisma.challenge.findFirst({
       where: {
         id,
-        ...(role === 'ADMIN'
+        ...(isAdmin
           ? {}
           : {
               OR: [
@@ -153,6 +160,31 @@ export class ChallengeRepository {
       },
       select: challengeDetailSelect,
     });
+
+    if (!challenge) return null;
+
+    if (!isAdmin) return challenge;
+
+    const [prev, next] = await Promise.all([
+      this.#prisma.challenge.findFirst({
+        where: { createdAt: { lt: challenge.createdAt } },
+        orderBy: { createdAt: 'desc' },
+        select: { id: true },
+      }),
+      this.#prisma.challenge.findFirst({
+        where: { createdAt: { gt: challenge.createdAt } },
+        orderBy: { createdAt: 'asc' },
+        select: { id: true },
+      }),
+    ]);
+
+    return {
+      ...challenge,
+      navigation: {
+        prevId: prev?.id ?? null,
+        nextId: next?.id ?? null,
+      },
+    };
   }
 
   // 챌린지 신청 생성

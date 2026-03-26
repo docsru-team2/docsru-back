@@ -71,13 +71,14 @@ export class AdminController extends BaseController {
 
   //챌린지 목록 조회 - /admin/challenges
   async getList(req, res) {
-    const { page, pageSize, sort, keyword, reviewStatus } = req.query;
+    const { page, pageSize, sort, keyword, reviewStatus, viewType } = req.query;
     const result = await this.#adminService.getChallengeList({
       page: Number(page), // 문자열 → 숫자 변환
       limit: Number(pageSize),
       sort,
       keyword,
       reviewStatus,
+      viewType,
     });
     res.status(HTTP_STATUS.OK).json(result);
   }
