@@ -30,6 +30,9 @@ export class AuthController extends BaseController {
     this.router.post('/sign-in', validate('body', loginSchema), (req, res) =>
       this.login(req, res),
     );
+    this.router.post('/logout', (req, res) => this.logout(req, res));
+    this.router.post('/refresh', (req, res) => this.refresh(req, res));
+
     this.router.get(
       '/social/:provider/sign-in',
       validate('params', socialProviderParamSchema),
@@ -72,13 +75,28 @@ export class AuthController extends BaseController {
     });
 
     this.#cookieProvider.setAuthCookies(res, tokens);
-    res.status(HTTP_STATUS.OK).json(user);
+    res.status(HTTP_STATUS.OK).json({ user, accessToken: tokens.accessToken });
   }
 
   //일반 로그아웃
   async logout(req, res) {
     this.#cookieProvider.clearAuthCookies(res);
     res.sendStatus(HTTP_STATUS.NO_CONTENT);
+  }
+
+  //토큰 리프레시
+  async refresh(req, res, next) {
+    try {
+      const { refreshToken } = req.cookies;
+      const { accessToken, tokens } =
+        await this.#authService.refreshTokens(refreshToken);
+
+      this.#cookieProvider.setAuthCookies(res, tokens);
+
+      res.status(HTTP_STATUS.OK).json({ accessToken });
+    } catch (error) {
+      next(error);
+    }
   }
 
   // 소셜 로그인

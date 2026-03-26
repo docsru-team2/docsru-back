@@ -11,10 +11,11 @@ export class AuthMiddleware {
 
   async authenticate(req, res, next) {
     try {
-      const { accessToken, refreshToken } = req.cookies;
+      const authHeader = req.headers.authorization;
+      let accessToken = null;
 
-      if (!accessToken && !refreshToken) {
-        return next();
+      if (authHeader?.startsWith('Bearer ')) {
+        accessToken = authHeader.split(' ')[1];
       }
 
       const accessUserId = accessToken
@@ -26,6 +27,7 @@ export class AuthMiddleware {
         return next();
       }
 
+      const {refreshToken} = req.cookies;
       if (!refreshToken) {
         this.#cookieProvider.clearAuthCookies(res);
         return next();

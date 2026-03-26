@@ -42,7 +42,11 @@ export class AuthService {
     });
 
     const tokens = this.#tokenProvider.generateTokens(user);
-    return { user, tokens };
+    return {
+      user,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+    };
   }
 
   //로그인
@@ -70,7 +74,11 @@ export class AuthService {
 
     const tokens = this.#tokenProvider.generateTokens(user);
 
-    return { user, tokens };
+    return {
+      user,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+    };
   }
 
   //내 정보 조회
@@ -96,6 +104,10 @@ export class AuthService {
 
     const tokens = this.#tokenProvider.generateTokens(user);
 
-    return { user, tokens };
+    return {
+      user,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+    };
   }
 }
