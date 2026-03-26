@@ -3,7 +3,7 @@ export const userPaths = {
     get: {
       tags: ['User'],
       summary: '전체 유저 목록 조회',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       responses: {
         200: {
           description: '유저 목록',
@@ -19,7 +19,7 @@ export const userPaths = {
     post: {
       tags: ['User'],
       summary: '유저 생성',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       requestBody: {
         required: true,
         content: {
@@ -48,7 +48,7 @@ export const userPaths = {
     get: {
       tags: ['User'],
       summary: '유저 상세 조회',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       parameters: [
         {
           name: 'id',

@@ -26,10 +26,10 @@ const swaggerDocument = {
   ],
   components: {
     securitySchemes: {
-      cookieAuth: {
-        type: 'apiKey',
-        in: 'cookie',
-        name: 'accessToken',
+      bearerAuth: {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
       },
     },
     schemas: {

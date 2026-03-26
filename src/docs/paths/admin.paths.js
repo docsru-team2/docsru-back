@@ -11,7 +11,7 @@ export const adminPaths = {
     get: {
       tags: ['Admin'],
       summary: '챌린지 목록 조회 (관리자)',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       parameters: [
         { name: 'page', in: 'query', schema: { type: 'integer', default: 1 }, description: '페이지 번호' },
         { name: 'pageSize', in: 'query', schema: { type: 'integer', default: 10 }, description: '페이지당 항목 수' },
@@ -50,7 +50,7 @@ export const adminPaths = {
     get: {
       tags: ['Admin'],
       summary: '챌린지 상세 조회 (관리자)',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       parameters: [adminIdParam],
       responses: {
         200: { description: '챌린지 상세', content: { 'application/json': { schema: { $ref: '#/components/schemas/Challenge' } } } },
@@ -61,7 +61,7 @@ export const adminPaths = {
     patch: {
       tags: ['Admin'],
       summary: '챌린지 수정 (관리자)',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       parameters: [adminIdParam],
       requestBody: {
         required: true,
@@ -94,7 +94,7 @@ export const adminPaths = {
     patch: {
       tags: ['Admin'],
       summary: '챌린지 승인 (관리자)',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       parameters: [adminIdParam],
       responses: {
         200: { description: '챌린지 승인 성공', content: { 'application/json': { schema: { $ref: '#/components/schemas/Challenge' } } } },
@@ -108,7 +108,7 @@ export const adminPaths = {
     patch: {
       tags: ['Admin'],
       summary: '챌린지 거절 (관리자)',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       parameters: [adminIdParam],
       requestBody: {
         required: false,
@@ -136,7 +136,7 @@ export const adminPaths = {
       tags: ['Admin'],
       summary: '챌린지 삭제 - Soft Delete (관리자)',
       description: '실제 삭제가 아닌 reviewStatus를 DELETED로 변경합니다.',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       parameters: [adminIdParam],
       requestBody: {
         required: false,
@@ -163,7 +163,7 @@ export const adminPaths = {
     patch: {
       tags: ['Admin'],
       summary: '작업물 수정 (관리자)',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       parameters: [adminIdParam],
       requestBody: {
         required: true,
@@ -188,7 +188,7 @@ export const adminPaths = {
     patch: {
       tags: ['Admin'],
       summary: '작업물 삭제 - Soft Delete (관리자)',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       parameters: [adminIdParam],
       responses: {
         204: { description: '작업물 삭제 성공' },
@@ -202,7 +202,7 @@ export const adminPaths = {
     delete: {
       tags: ['Admin'],
       summary: '피드백 삭제 (관리자)',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       parameters: [adminIdParam],
       responses: {
         204: { description: '피드백 삭제 성공' },

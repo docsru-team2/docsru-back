@@ -62,7 +62,17 @@ export const authPaths = {
       responses: {
         200: {
           description: '로그인 성공 (쿠키에 accessToken, refreshToken 설정)',
-          content: { 'application/json': { schema: { $ref: '#/components/schemas/User' } } },
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  user: { $ref: '#/components/schemas/User' },
+                  accessToken: { type: 'string' },
+                },
+              },
+            },
+          },
         },
         400: { description: '유효성 검증 실패', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
         401: { description: '이메일 또는 비밀번호 불일치', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
@@ -85,7 +95,7 @@ export const authPaths = {
     get: {
       tags: ['Auth'],
       summary: '내 정보 조회',
-      security: [{ cookieAuth: [] }],
+      security: [{ bearerAuth: [] }],
       responses: {
         200: { description: '내 정보', content: { 'application/json': { schema: { $ref: '#/components/schemas/User' } } } },
         401: { description: '인증 필요', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
