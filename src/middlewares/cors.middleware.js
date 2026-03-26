@@ -1,8 +1,10 @@
-import { corsOrigins, isProduction } from '#config';
+import { corsOrigins, isProduction, config } from '#config';
 
 export const cors = (req, res, next) => {
   const origin = req.headers.origin;
-  const isAllowed = !isProduction || (origin && corsOrigins.includes(origin));
+  const allowedOrigins = [...corsOrigins, config.CLIENT_BASE_URL];
+  const isAllowed =
+    !isProduction || (origin && allowedOrigins.includes(origin));
 
   if (isAllowed && origin) {
     res.header('Access-Control-Allow-Origin', origin);
