@@ -2,8 +2,7 @@ export class ChallengeRepository {
   #prisma;
 
   #whereCase({ keyword, reviewStatus, userType, userId, viewType, ...rest }) {
-    const isAdmin = userType.toUpperCase() === 'ADMIN';
-
+    const isAdmin = userType?.toUpperCase() === 'ADMIN';
     const reviewStatusFilter =
       !isAdmin || viewType === 'LIST'
         ? { reviewStatus: 'APPROVED' }

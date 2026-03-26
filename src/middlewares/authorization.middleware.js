@@ -11,7 +11,7 @@ export const needsLogin = createAuthorizationMiddleware(hasLoginUser);
 
 // 관리자 확인: userType을 받아 인가 여부 검증
 export const requireAdmin = (req, res, next) => {
-  if (req.user?.userType?.toUpperCase() !== 'ADMIN') {
+  if (!req.user || req.user?.userType?.toUpperCase() !== 'ADMIN') {
     throw new ForbiddenException(ERROR_CODE.AUTH_FORBIDDEN);
   }
   next();
