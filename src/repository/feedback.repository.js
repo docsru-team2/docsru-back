@@ -41,6 +41,16 @@ export class FeedbackRepository {
     ]);
   }
 
+  // 피드백 조회
+  findById(id) {
+    return this.#prisma.feedback.findUnique({
+      where: {
+        id: id,
+      },
+      select: feedbackSelect,
+    });
+  }
+
   // 피드백 생성
   create(submissionId, data) {
     return this.#prisma.feedback.create({

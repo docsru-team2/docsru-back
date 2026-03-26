@@ -4,16 +4,19 @@ import { ERROR_CODE } from '#constants';
 export class AdminService {
   #challengeRepository;
   #submissionRepository;
+  #feedbackRepository;
   #notificationRepository;
 
   constructor({
     challengeRepository,
-    notificationRepository,
     submissionRepository,
+    feedbackRepository,
+    notificationRepository,
   }) {
     this.#challengeRepository = challengeRepository;
-    this.#notificationRepository = notificationRepository;
     this.#submissionRepository = submissionRepository;
+    this.#feedbackRepository = feedbackRepository;
+    this.#notificationRepository = notificationRepository;
   }
 
   //챌린지 목록 조회
@@ -44,6 +47,7 @@ export class AdminService {
   async approveChallenge(id, adminId) {
     const challenge = await this.#challengeRepository.findById(id, {
       role: 'ADMIN',
+      include: { creator: true },
     });
 
     if (!challenge) throw new NotFoundException(ERROR_CODE.CHALLENGE_NOT_FOUND);
@@ -74,8 +78,8 @@ export class AdminService {
   async rejectChallenge(id, adminId, { rejectReason }) {
     const challenge = await this.#challengeRepository.findById(id, {
       role: 'ADMIN',
+      include: { creator: true },
     });
-
     if (!challenge) throw new NotFoundException(ERROR_CODE.CHALLENGE_NOT_FOUND);
     if (!rejectReason)
       throw new NotFoundException(ERROR_CODE.REJECT_REASON_MISSING);
@@ -107,6 +111,7 @@ export class AdminService {
   async deleteChallenge(id, adminId, { deleteReason }) {
     const challenge = await this.#challengeRepository.findById(id, {
       role: 'ADMIN',
+      include: { creator: true },
     });
 
     if (!challenge) throw new NotFoundException(ERROR_CODE.CHALLENGE_NOT_FOUND);
@@ -138,6 +143,7 @@ export class AdminService {
   async editChallenge(id, adminId, data) {
     const challenge = await this.#challengeRepository.findById(id, {
       role: 'ADMIN',
+      include: { creator: true },
     });
 
     if (!challenge) throw new NotFoundException(ERROR_CODE.CHALLENGE_NOT_FOUND);
@@ -157,7 +163,9 @@ export class AdminService {
 
   // 작업물 수정
   async editSubmission(id, adminId, data) {
-    const submisson = await this.#submissionRepository.findById(id);
+    const submisson = await this.#submissionRepository.findById(id, {
+      include: { user: true },
+    });
 
     if (!submisson)
       throw new NotFoundException(ERROR_CODE.SUBMISSION_NOT_FOUND);
@@ -177,7 +185,9 @@ export class AdminService {
 
   // 작업물 삭제(soft delete)
   async deleteSubmission(id, adminId) {
-    const submisson = await this.#submissionRepository.findById(id);
+    const submisson = await this.#submissionRepository.findById(id, {
+      include: { user: true },
+    });
 
     if (!submisson)
       throw new NotFoundException(ERROR_CODE.SUBMISSION_NOT_FOUND);
@@ -191,6 +201,26 @@ export class AdminService {
 
     // await this.#notificationRepository.create({
     //   userId: submisson.user.id,
+    //   actorUserId: adminId,
+    //   type: 'SUBMISSION_DELETED',
+    //   content: '작업물이 삭제되었습니다.',
+    //   targetId: id,
+    // });
+
+    return updated;
+  }
+
+  async deleteFeedback(id, adminId) {
+    const feeback = await this.#feedbackRepository.findById(id, {
+      include: { user: true },
+    });
+
+    if (!feeback) throw new NotFoundException(ERROR_CODE.FEEDBACK_NOT_FOUND);
+
+    const updated = await this.#feedbackRepository.delete(id);
+
+    // await this.#notificationRepository.create({
+    //   userId: feeback.user.id,
     //   actorUserId: adminId,
     //   type: 'SUBMISSION_DELETED',
     //   content: '작업물이 삭제되었습니다.',
