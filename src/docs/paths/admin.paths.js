@@ -13,14 +13,37 @@ export const adminPaths = {
       summary: '챌린지 목록 조회 (관리자)',
       security: [{ bearerAuth: [] }],
       parameters: [
-        { name: 'page', in: 'query', schema: { type: 'integer', default: 1 }, description: '페이지 번호' },
-        { name: 'pageSize', in: 'query', schema: { type: 'integer', default: 10 }, description: '페이지당 항목 수' },
-        { name: 'sort', in: 'query', schema: { type: 'string' }, description: '정렬 기준' },
-        { name: 'keyword', in: 'query', schema: { type: 'string' }, description: '검색 키워드' },
+        {
+          name: 'page',
+          in: 'query',
+          schema: { type: 'integer', default: 1 },
+          description: '페이지 번호',
+        },
+        {
+          name: 'limit',
+          in: 'query',
+          schema: { type: 'integer', default: 10 },
+          description: '페이지당 항목 수',
+        },
+        {
+          name: 'sort',
+          in: 'query',
+          schema: { type: 'string' },
+          description: '정렬 기준',
+        },
+        {
+          name: 'keyword',
+          in: 'query',
+          schema: { type: 'string' },
+          description: '검색 키워드',
+        },
         {
           name: 'reviewStatus',
           in: 'query',
-          schema: { type: 'string', enum: ['PENDING', 'APPROVED', 'REJECTED', 'DELETED'] },
+          schema: {
+            type: 'string',
+            enum: ['PENDING', 'APPROVED', 'REJECTED', 'DELETED'],
+          },
           description: '심사 상태 필터',
         },
       ],
@@ -32,7 +55,10 @@ export const adminPaths = {
               schema: {
                 type: 'object',
                 properties: {
-                  data: { type: 'array', items: { $ref: '#/components/schemas/Challenge' } },
+                  data: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/Challenge' },
+                  },
                   total: { type: 'integer' },
                   page: { type: 'integer' },
                   limit: { type: 'integer' },
@@ -41,7 +67,14 @@ export const adminPaths = {
             },
           },
         },
-        401: { description: '인증 필요', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+        401: {
+          description: '인증 필요',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Error' },
+            },
+          },
+        },
       },
     },
   },
@@ -53,9 +86,30 @@ export const adminPaths = {
       security: [{ bearerAuth: [] }],
       parameters: [adminIdParam],
       responses: {
-        200: { description: '챌린지 상세', content: { 'application/json': { schema: { $ref: '#/components/schemas/Challenge' } } } },
-        401: { description: '인증 필요', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
-        404: { description: '챌린지 없음', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+        200: {
+          description: '챌린지 상세',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Challenge' },
+            },
+          },
+        },
+        401: {
+          description: '인증 필요',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Error' },
+            },
+          },
+        },
+        404: {
+          description: '챌린지 없음',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Error' },
+            },
+          },
+        },
       },
     },
     patch: {
@@ -72,8 +126,14 @@ export const adminPaths = {
               properties: {
                 title: { type: 'string' },
                 sourceUrl: { type: 'string', format: 'uri' },
-                field: { type: 'string', enum: ['NEXT_JS', 'MODERN_JS', 'WEB', 'ETC'] },
-                documentType: { type: 'string', enum: ['OFFICIAL_DOC', 'BLOG', 'BOOK', 'ETC'] },
+                field: {
+                  type: 'string',
+                  enum: ['NEXT_JS', 'MODERN_JS', 'WEB', 'ETC'],
+                },
+                documentType: {
+                  type: 'string',
+                  enum: ['OFFICIAL_DOC', 'BLOG', 'BOOK', 'ETC'],
+                },
                 description: { type: 'string' },
                 deadline: { type: 'string', format: 'date-time' },
                 maxParticipants: { type: 'integer' },
@@ -83,9 +143,30 @@ export const adminPaths = {
         },
       },
       responses: {
-        200: { description: '챌린지 수정 성공', content: { 'application/json': { schema: { $ref: '#/components/schemas/Challenge' } } } },
-        401: { description: '인증 필요', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
-        404: { description: '챌린지 없음', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+        200: {
+          description: '챌린지 수정 성공',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Challenge' },
+            },
+          },
+        },
+        401: {
+          description: '인증 필요',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Error' },
+            },
+          },
+        },
+        404: {
+          description: '챌린지 없음',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Error' },
+            },
+          },
+        },
       },
     },
   },
@@ -97,9 +178,30 @@ export const adminPaths = {
       security: [{ bearerAuth: [] }],
       parameters: [adminIdParam],
       responses: {
-        200: { description: '챌린지 승인 성공', content: { 'application/json': { schema: { $ref: '#/components/schemas/Challenge' } } } },
-        401: { description: '인증 필요', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
-        404: { description: '챌린지 없음', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+        200: {
+          description: '챌린지 승인 성공',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Challenge' },
+            },
+          },
+        },
+        401: {
+          description: '인증 필요',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Error' },
+            },
+          },
+        },
+        404: {
+          description: '챌린지 없음',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Error' },
+            },
+          },
+        },
       },
     },
   },
@@ -117,16 +219,40 @@ export const adminPaths = {
             schema: {
               type: 'object',
               properties: {
-                rejectReason: { type: 'string', example: '챌린지 내용이 부적절합니다.' },
+                rejectReason: {
+                  type: 'string',
+                  example: '챌린지 내용이 부적절합니다.',
+                },
               },
             },
           },
         },
       },
       responses: {
-        200: { description: '챌린지 거절 성공', content: { 'application/json': { schema: { $ref: '#/components/schemas/Challenge' } } } },
-        401: { description: '인증 필요', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
-        404: { description: '챌린지 없음', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+        200: {
+          description: '챌린지 거절 성공',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Challenge' },
+            },
+          },
+        },
+        401: {
+          description: '인증 필요',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Error' },
+            },
+          },
+        },
+        404: {
+          description: '챌린지 없음',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Error' },
+            },
+          },
+        },
       },
     },
   },
@@ -152,9 +278,30 @@ export const adminPaths = {
         },
       },
       responses: {
-        200: { description: '챌린지 삭제 성공', content: { 'application/json': { schema: { $ref: '#/components/schemas/Challenge' } } } },
-        401: { description: '인증 필요', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
-        404: { description: '챌린지 없음', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+        200: {
+          description: '챌린지 삭제 성공',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Challenge' },
+            },
+          },
+        },
+        401: {
+          description: '인증 필요',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Error' },
+            },
+          },
+        },
+        404: {
+          description: '챌린지 없음',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Error' },
+            },
+          },
+        },
       },
     },
   },
@@ -178,8 +325,22 @@ export const adminPaths = {
       },
       responses: {
         200: { description: '작업물 수정 성공' },
-        401: { description: '인증 필요', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
-        404: { description: '작업물 없음', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+        401: {
+          description: '인증 필요',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Error' },
+            },
+          },
+        },
+        404: {
+          description: '작업물 없음',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Error' },
+            },
+          },
+        },
       },
     },
   },
@@ -192,8 +353,22 @@ export const adminPaths = {
       parameters: [adminIdParam],
       responses: {
         204: { description: '작업물 삭제 성공' },
-        401: { description: '인증 필요', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
-        404: { description: '작업물 없음', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+        401: {
+          description: '인증 필요',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Error' },
+            },
+          },
+        },
+        404: {
+          description: '작업물 없음',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Error' },
+            },
+          },
+        },
       },
     },
   },
@@ -206,8 +381,22 @@ export const adminPaths = {
       parameters: [adminIdParam],
       responses: {
         204: { description: '피드백 삭제 성공' },
-        401: { description: '인증 필요', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
-        404: { description: '피드백 없음', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+        401: {
+          description: '인증 필요',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Error' },
+            },
+          },
+        },
+        404: {
+          description: '피드백 없음',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Error' },
+            },
+          },
+        },
       },
     },
   },
