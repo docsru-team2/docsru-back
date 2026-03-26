@@ -17,11 +17,12 @@ export class ChallengeService {
     const { page = 1, limit = 10, sort, ...rest } = params;
     const orderBy = CHALLENGE_ORDER_BY[sort] || DEFAULT_ORDER;
 
-    const { list, totalCount } = await this.#challengeRepository.findAll({
+    const [list, totalCount] = await this.#challengeRepository.findAll({
       page: Number(page),
       limit: Number(limit),
       orderBy,
-      isAdmin /* Boolean : True(admin), False(user)  */,
+      userType: isAdmin ? 'ADMIN' : 'USER',
+      viewType: 'LIST',
       ...rest,
     });
 
@@ -45,21 +46,24 @@ export class ChallengeService {
 
   // 챌린지 생성
   async make(data) {
-    return this.#challengeRepository.create(data);
+    return this.#challengeRepository.create({
+      ...data,
+      reviewStatus: 'PENDING',
+    });
   }
 
   // 챌린지 수정
-  async edit(id, data) {
+  async edit(id, userId, data) {
     return this.#challengeRepository.update(id, data);
   }
 
   // 챌린지 삭제
-  async delete(id) {
+  async delete(id, userId) {
     return this.#challengeRepository.delete(id);
   }
 
   // 챌린지 참여 신청
-  async join(challengeId, userId) {
+  async joinChallenge(challengeId, userId) {
     const isJoined = await this.#participantRepository.findIfUserInChallenge(
       challengeId,
       userId,
@@ -69,8 +73,9 @@ export class ChallengeService {
       throw new ConflictException(ERROR_CODE.CHALLENGE_ALREADY_JOINED);
     }
     const challenge = await this.findDetail(challengeId);
-    const participantsCount =
-      await this.#participantRepository.findAllByChallengeId(challengeId);
+    const participantsCount = await this.#participantRepository.findAll({
+      id: challengeId,
+    });
 
     if (participantsCount.totalCount >= challenge.maxParticipants) {
       throw new ConflictException(
@@ -83,11 +88,10 @@ export class ChallengeService {
 
   // 참여자 목록 조회 (페이지네이션 포함)
   async getParticipants(challengeId, query) {
-    const { list, totalCount } =
-      await this.#participantRepository.findAllByChallengeId(
-        challengeId,
-        query,
-      );
+    const { list, totalCount } = await this.#participantRepository.findAll({
+      id: challengeId,
+      query,
+    });
 
     return {
       list: list.map((item) => ({

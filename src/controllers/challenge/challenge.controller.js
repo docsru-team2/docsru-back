@@ -53,7 +53,6 @@ export class ChallengeController extends BaseController {
 
     this.router.get(
       '/me/applied',
-      validate('params', idParamSchema),
       (req, res, next) => {
         req.query.userId = req.user.id;
         return this.getAll(req, res, next);
@@ -61,7 +60,6 @@ export class ChallengeController extends BaseController {
     );
     this.router.get(
       '/me/ongoing',
-      validate('params', idParamSchema),
       (req, res, next) => {
         req.query.userId = req.user.id;
         req.query.progressStatus = 'OPEN';
@@ -70,7 +68,6 @@ export class ChallengeController extends BaseController {
     );
     this.router.get(
       '/me/completed',
-      validate('params', idParamSchema),
       (req, res, next) => {
         req.query.userId = req.user.id;
         req.query.progressStatus = 'CLOSED';
@@ -83,12 +80,12 @@ export class ChallengeController extends BaseController {
 
   async getAll(req, res, next) {
     try {
-      const { page, limit, sort, keyword, reviewStatus } = req.query;
+      const { page, limit, orderBy, keyword, reviewStatus } = req.query;
 
       const result = await this.#challengeService.findAll({
         page: Number(page) || 1,
         limit: Number(limit) || 10,
-        sort,
+        orderBy,
         keyword,
         reviewStatus,
       });
@@ -102,7 +99,7 @@ export class ChallengeController extends BaseController {
   async getOne(req, res, next) {
     try {
       const { id } = req.params;
-      const challenge = await this.#challengeService.getChallengeDetail(id);
+      const challenge = await this.#challengeService.findDetail(id);
       res.status(HTTP_STATUS.OK).json(challenge);
     } catch (error) {
       next(error);
@@ -126,7 +123,11 @@ export class ChallengeController extends BaseController {
     try {
       const { id } = req.params;
       const data = req.body;
-      const updatedChallenge = await this.#challengeService.edit(id, req.user.id, data);
+      const updatedChallenge = await this.#challengeService.edit(
+        id,
+        req.user.id,
+        data,
+      );
       res.status(HTTP_STATUS.OK).json(updatedChallenge);
     } catch (error) {
       next(error);

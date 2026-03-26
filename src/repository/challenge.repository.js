@@ -117,7 +117,7 @@ export class ChallengeRepository {
 
   // 챌린지 상세 조회
   async findById(id, { userId, userType }) {
-    const isAdmin = userType === 'admin';
+    const isAdmin = userType === 'ADMIN';
 
     const challenge = await this.#prisma.challenge.findFirst({
       where: {
