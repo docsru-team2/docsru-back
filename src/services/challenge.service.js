@@ -36,8 +36,12 @@ export class ChallengeService {
   }
 
   // 챌린지 상세 조회
-  async findDetail(id) {
-    const challenge = await this.#challengeRepository.findById(id);
+  async findDetail(id, user = {}) {
+    const challenge = await this.#challengeRepository.findById(id, {
+      userId: user.id,
+      userType: user.userType,
+    });
+
     if (!challenge) {
       throw new NotFoundException(ERROR_CODE.CHALLENGE_NOT_FOUND);
     }
@@ -90,7 +94,8 @@ export class ChallengeService {
   async getParticipants(challengeId, query) {
     const { list, totalCount } = await this.#participantRepository.findAll({
       id: challengeId,
-      query,
+      page: Number(query.page) || 1,
+      limit: Number(query.limit) || 10,
     });
 
     return {
@@ -105,6 +110,28 @@ export class ChallengeService {
       pagination: {
         totalCount,
         hasNext: query.page * query.limit < totalCount,
+      },
+    };
+  }
+  //내가 신청한 챌린지 목록 조회
+  async findMyChallenges(params) {
+    const { page = 1, limit = 10, sort, userId, ...rest } = params;
+    const orderBy = CHALLENGE_ORDER_BY[sort] || DEFAULT_ORDER;
+
+    const [list, totalCount] = await this.#challengeRepository.findByMyList({
+      page: Number(page),
+      limit: Number(limit),
+      userId,
+      orderBy,
+      userType: 'USER',
+      ...rest,
+    });
+
+    return {
+      list,
+      pagination: {
+        totalCount,
+        hasNext: Number(page) * Number(limit) < totalCount,
       },
     };
   }

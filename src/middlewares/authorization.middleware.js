@@ -24,7 +24,7 @@ export const checkOwnership =
     try {
       const { id } = req.params;
       const currentUserId = req.user.id;
-      const resource = await resourceService.findDetail(id);
+      const resource = await resourceService.findDetail(id, req.user);
 
       if (!resource) {
         throw new NotFoundException(ERROR_CODE.COMMON_NOT_FOUND);

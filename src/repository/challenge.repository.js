@@ -1,7 +1,14 @@
 export class ChallengeRepository {
   #prisma;
 
-  #whereCase({ keyword, reviewStatus, userType, userId, viewType, ...rest }) {
+  #whereCase({
+    keyword,
+    reviewStatus,
+    userType = 'USER',
+    userId,
+    viewType,
+    ...rest
+  }) {
     const isAdmin = userType.toUpperCase() === 'ADMIN';
 
     const reviewStatusFilter =
@@ -49,6 +56,7 @@ export class ChallengeRepository {
       description: true,
       rejectReason: true,
       deleteReason: true,
+      creatorId: true,
       creator: {
         select: { id: true, nickname: true },
       },
@@ -92,8 +100,9 @@ export class ChallengeRepository {
     keyword,
     userId,
     reviewStatus = 'APPROVED',
-    progressStatus = 'OPEN',
+    progressStatus,
     orderBy,
+    userType = 'USER',
   }) {
     const skip = (page - 1) * limit;
     const where = this.#whereCase({
@@ -101,6 +110,7 @@ export class ChallengeRepository {
       userId,
       reviewStatus,
       progressStatus,
+      userType,
     });
 
     return await Promise.all([
@@ -116,7 +126,7 @@ export class ChallengeRepository {
   }
 
   // 챌린지 상세 조회
-  async findById(id, { userId, userType }) {
+  async findById(id, { userId, userType } = {}) {
     const isAdmin = userType === 'ADMIN';
 
     const challenge = await this.#prisma.challenge.findFirst({

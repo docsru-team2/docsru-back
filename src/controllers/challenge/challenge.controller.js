@@ -5,7 +5,7 @@ import {
   editChallengeSchema,
   idParamSchema,
 } from './dto/challenge.dto.js';
-import { validate, checkOwnership } from '#middlewares';
+import { needsLogin, validate, checkOwnership } from '#middlewares';
 
 export class ChallengeController extends BaseController {
   #challengeService;
@@ -29,12 +29,14 @@ export class ChallengeController extends BaseController {
     );
     this.router.patch(
       '/:id',
+      needsLogin,
       validate('params', idParamSchema, 'body', editChallengeSchema),
       checkOwnership(this.#challengeService, 'creatorId'),
       (req, res, next) => this.update(req, res, next),
     );
     this.router.delete(
       '/:id',
+      needsLogin,
       validate('params', idParamSchema),
       checkOwnership(this.#challengeService, 'creatorId'),
       (req, res, next) => this.delete(req, res, next),
@@ -51,29 +53,20 @@ export class ChallengeController extends BaseController {
       (req, res, next) => this.join(req, res, next),
     );
 
-    this.router.get(
-      '/me/applied',
-      (req, res, next) => {
-        req.query.userId = req.user.id;
-        return this.getAll(req, res, next);
-      },
-    );
-    this.router.get(
-      '/me/ongoing',
-      (req, res, next) => {
-        req.query.userId = req.user.id;
-        req.query.progressStatus = 'OPEN';
-        return this.getAll(req, res, next);
-      },
-    );
-    this.router.get(
-      '/me/completed',
-      (req, res, next) => {
-        req.query.userId = req.user.id;
-        req.query.progressStatus = 'CLOSED';
-        return this.getAll(req, res, next);
-      },
-    );
+    this.router.get('/me/applied', (req, res, next) => {
+      req.query.userId = req.user.id;
+      return this.getMyList(req, res, next);
+    });
+    this.router.get('/me/ongoing', (req, res, next) => {
+      req.query.userId = req.user.id;
+      req.query.progressStatus = 'OPEN';
+      return this.getMyList(req, res, next);
+    });
+    this.router.get('/me/completed', (req, res, next) => {
+      req.query.userId = req.user.id;
+      req.query.progressStatus = 'CLOSED';
+      return this.getMyList(req, res, next);
+    });
 
     return this.router;
   }
@@ -138,7 +131,10 @@ export class ChallengeController extends BaseController {
     try {
       const { id } = req.params;
       await this.#challengeService.delete(id, req.user.id);
-      res.sendStatus(HTTP_STATUS.NO_CONTENT);
+      res.status(HTTP_STATUS.NO_CONTENT).json({
+        success: true,
+        message: '챌린지 신청이 취소되었습니다.',
+      });
     } catch (error) {
       next(error);
     }
@@ -164,6 +160,23 @@ export class ChallengeController extends BaseController {
         id,
         req.query,
       );
+      res.status(HTTP_STATUS.OK).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getMyList(req, res, next) {
+    try {
+      const { page, limit, orderBy, ...rest } = req.query;
+
+      const result = await this.#challengeService.findMyChallenges({
+        page: Number(page) || 1,
+        limit: Number(limit) || 10,
+        sort: orderBy,
+        ...rest, 
+      });
+
       res.status(HTTP_STATUS.OK).json(result);
     } catch (error) {
       next(error);
