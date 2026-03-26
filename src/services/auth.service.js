@@ -25,11 +25,14 @@ export class AuthService {
     provider = 'LOCAL',
     grade = 'NORMAL',
   }) {
-    const existingUser = await this.#userRepository.findByEmail(email);
-    if (existingUser) {
+    const checkEmail = await this.#userRepository.findBy({ email });
+    if (checkEmail) {
       throw new ConflictException(ERROR_CODE.USER_EMAIL_ALREADY_EXISTS);
     }
-
+    const checkNickname = await this.#userRepository.findBy({ nickname });
+    if (checkNickname) {
+      throw new ConflictException(ERROR_CODE.USER_NICKNAME_ALREADY_EXISTS);
+    }
     const hashedPassword = await this.#passwordProvider.hash(password);
 
     const user = await this.#userRepository.create({
@@ -51,9 +54,12 @@ export class AuthService {
 
   //로그인
   async login({ email, password }) {
-    const authUser = await this.#userRepository.findByEmail(email, {
-      includePassword: true,
-    });
+    const authUser = await this.#userRepository.findBy(
+      { email },
+      {
+        includePassword: true,
+      },
+    );
 
     if (!authUser) {
       throw new UnauthorizedException(ERROR_CODE.AUTH_INVALID_CREDENTIALS);
@@ -67,7 +73,7 @@ export class AuthService {
       throw new UnauthorizedException(ERROR_CODE.AUTH_INVALID_CREDENTIALS);
     }
 
-    const user = await this.#userRepository.findById(authUser.id);
+    const user = await this.#userRepository.findBy({ id: authUser.id });
     if (!user) {
       throw new UnauthorizedException(ERROR_CODE.AUTH_UNAUTHORIZED);
     }
@@ -83,7 +89,7 @@ export class AuthService {
 
   //내 정보 조회
   async getMe(userId) {
-    const user = await this.#userRepository.findById(userId);
+    const user = await this.#userRepository.findBy({ id: userId });
     if (!user) {
       throw new NotFoundException(ERROR_CODE.COMMON_NOT_FOUND);
     }
@@ -97,7 +103,7 @@ export class AuthService {
       throw new UnauthorizedException(ERROR_CODE.INVALID_TOKEN);
     }
 
-    const user = await this.#userRepository.findById(payload.userId);
+    const user = await this.#userRepository.findBy({ id: payload.userId });
     if (!user) {
       throw new UnauthorizedException(ERROR_CODE.AUTH_UNAUTHORIZED);
     }
