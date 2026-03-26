@@ -15,7 +15,8 @@ export class ChallengeParticipantRepository {
           id: true,
           nickname: true,
           grade: true,
-          _count: { /* prisma aggregate method: 관계 필드 count용임 */
+          /* prisma aggregate method: 관계 필드 count용임 */
+          _count: {
             select: {
               submissionLike: true,
             },
@@ -28,11 +29,13 @@ export class ChallengeParticipantRepository {
   }
 
   //챌린지 참여자 목록 조회
-  async findAllByChallengeId(
+  async findAll({
     id,
-    { page = 1, limit = 10 },
-    orderBy = { createdAt: 'desc' }, /* 혹시몰라서 넣었음 */
-  ) {
+    page = 1,
+    limit = 10,
+    orderBy = { createdAt: 'desc' } /* 혹시몰라서 넣었음 */,
+    ...rest
+  }) {
     const skip = (page - 1) * limit;
     const where = { challengeId: id };
 
@@ -43,6 +46,7 @@ export class ChallengeParticipantRepository {
         take: limit,
         select: this.#participantSelect,
         orderBy,
+        ...rest,
       }),
       this.#prisma.challengeParticipant.count({ where }),
     ]);
@@ -50,16 +54,16 @@ export class ChallengeParticipantRepository {
   }
 
   //승인된 챌린지 참여
-  joinChallenge(challengeId, userId) {
-    return this.#prisma.challengeParticipant.create({
+  async joinChallenge(challengeId, userId) {
+    return await this.#prisma.challengeParticipant.create({
       data: { challengeId, userId },
       select: this.#participantSelect,
     });
   }
 
   //챌린지 참여 여부 확인
-  findIfUserInChallenge(challengeId, userId) {
-    return this.#prisma.challengeParticipant.findUnique({
+  async findIfUserInChallenge(challengeId, userId) {
+    return await this.#prisma.challengeParticipant.findUnique({
       where: {
         challengeId_userId: { challengeId, userId },
       },
