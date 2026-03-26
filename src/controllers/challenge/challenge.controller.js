@@ -53,16 +53,16 @@ export class ChallengeController extends BaseController {
       (req, res, next) => this.join(req, res, next),
     );
 
-    this.router.get('/me/applied', (req, res, next) => {
+    this.router.get('/me/applied', needsLogin, (req, res, next) => {
       req.query.userId = req.user.id;
       return this.getMyList(req, res, next);
     });
-    this.router.get('/me/ongoing', (req, res, next) => {
+    this.router.get('/me/ongoing', needsLogin, (req, res, next) => {
       req.query.userId = req.user.id;
       req.query.progressStatus = 'OPEN';
       return this.getMyList(req, res, next);
     });
-    this.router.get('/me/completed', (req, res, next) => {
+    this.router.get('/me/completed', needsLogin, (req, res, next) => {
       req.query.userId = req.user.id;
       req.query.progressStatus = 'CLOSED';
       return this.getMyList(req, res, next);
@@ -174,7 +174,8 @@ export class ChallengeController extends BaseController {
         page: Number(page) || 1,
         limit: Number(limit) || 10,
         sort: orderBy,
-        ...rest, 
+        userId: req.user.id,
+        ...rest,
       });
 
       res.status(HTTP_STATUS.OK).json(result);

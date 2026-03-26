@@ -1,13 +1,22 @@
-import { HTTP_STATUS } from '#constants';
-import { ForbiddenException, NotFoundException } from '#exceptions';
+// import { HTTP_STATUS } from '#constants';
+import { ForbiddenException, NotFoundException, UnauthorizedException } from '#exceptions';
 import { ERROR_CODE } from '#constants';
 
-const createAuthorizationMiddleware = (predicate) => (req, res, next) =>
-  predicate(req) ? next() : res.sendStatus(HTTP_STATUS.UNAUTHORIZED);
+// const createAuthorizationMiddleware = (predicate) => (req, res, next) =>
+//   predicate(req) ? next() : res.sendStatus(HTTP_STATUS.UNAUTHORIZED);
 
-const hasLoginUser = (req) => Boolean(req.user);
+// const hasLoginUser = (req) => Boolean(req.user);
 
-export const needsLogin = createAuthorizationMiddleware(hasLoginUser);
+// export const needsLogin = createAuthorizationMiddleware(hasLoginUser);
+
+// ✅ 에러 객체를 명시적으로 던지는 방식으로 수정!
+export const needsLogin = (req, res, next) => {
+  if (!req.user || !req.user.id) {
+    // 💡 여기서 튕겨야 정상인데 안 튕긴다면 req.user가 엉뚱하게 채워져 있다는 증거!
+    throw new UnauthorizedException(ERROR_CODE.AUTH_REQUIRED);
+  }
+  next();
+};
 
 // 관리자 확인: userType을 받아 인가 여부 검증
 export const requireAdmin = (req, res, next) => {

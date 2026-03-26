@@ -9,6 +9,7 @@ export class ChallengeRepository {
     viewType,
     ...rest
   } = {}) {
+    const { userId: _, ...pureRest } = rest;
     const isAdmin = userType.toUpperCase() === 'ADMIN';
 
     const reviewStatusFilter =
@@ -23,8 +24,12 @@ export class ChallengeRepository {
         title: { contains: keyword.trim(), mode: 'insensitive' },
       }),
       ...reviewStatusFilter,
-      ...(userId && { participants: { some: { userId } } }),
-      ...rest,
+      ...(userId && {
+        participants: {
+          some: { userId: userId },
+        },
+      }),
+      ...pureRest,
     };
   }
 
