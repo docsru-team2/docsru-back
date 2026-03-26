@@ -1,16 +1,27 @@
 export class ChallengeRepository {
   #prisma;
+  
+   const reviewStatusFilter =
+      !isAdmin || viewType === 'LIST'
+        ? { reviewStatus: 'APPROVED' }
+        : reviewStatus
+          ? { reviewStatus }
+          : {};
+
   #whereCase({ keyword, reviewStatus, userType, userId, ...rest }) {
     const isAdmin = userType.toUpperCase() === 'ADMIN';
+    const reviewStatusFilter =
+      !isAdmin || viewType === 'LIST'
+        ? { reviewStatus: 'APPROVED' }
+        : reviewStatus
+          ? { reviewStatus }
+          : {};
+    
     return {
       ...(keyword?.trim() && {
         title: { contains: keyword.trim(), mode: 'insensitive' },
       }),
-      ...(!isAdmin
-        ? { reviewStatus: 'APPROVED' }
-        : reviewStatus
-          ? { reviewStatus }
-          : {}),
+      ...reviewStatusFilter,
       ...(userId && { participants: { some: { userId } } }),
       ...rest,
     };
@@ -57,6 +68,7 @@ export class ChallengeRepository {
     orderBy,
     keyword,
     reviewStatus,
+    viewType,
     userType,
   }) {
     const skip = (page - 1) * limit;
@@ -108,7 +120,7 @@ export class ChallengeRepository {
   async findById(id, { userId, userType }) {
     const isAdmin = userType === 'admin';
 
-    return this.#prisma.challenge.findFirst({
+    const challenge = await this.#prisma.challenge.findFirst({
       where: {
         id,
         ...(isAdmin
@@ -122,6 +134,31 @@ export class ChallengeRepository {
       },
       select: this.#challengeDetailSelect,
     });
+
+    if (!challenge) return null;
+
+    if (!isAdmin) return challenge;
+
+    const [prev, next] = await Promise.all([
+      this.#prisma.challenge.findFirst({
+        where: { createdAt: { lt: challenge.createdAt } },
+        orderBy: { createdAt: 'desc' },
+        select: { id: true },
+      }),
+      this.#prisma.challenge.findFirst({
+        where: { createdAt: { gt: challenge.createdAt } },
+        orderBy: { createdAt: 'asc' },
+        select: { id: true },
+      }),
+    ]);
+
+    return {
+      ...challenge,
+      navigation: {
+        prevId: prev?.id ?? null,
+        nextId: next?.id ?? null,
+      },
+    };
   }
 
   // 챌린지 신청 생성

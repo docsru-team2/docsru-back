@@ -20,12 +20,13 @@ export class AdminService {
   }
 
   //챌린지 목록 조회
-  async getChallengeList({ page, limit, sort, keyword, reviewStatus }) {
+  async getChallengeList({ page, limit, sort, keyword, reviewStatus, viewType }) {
     const [list, totalCount] = await this.#challengeRepository.findAll({
       page,
       limit,
       sort,
       keyword,
+      viewType,
       reviewStatus,
       isAdmin: true,
     });
