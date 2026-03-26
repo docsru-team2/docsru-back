@@ -29,13 +29,7 @@ export class ChallengeParticipantRepository {
   }
 
   //챌린지 참여자 목록 조회
-  async findAll({
-    id,
-    page = 1,
-    limit = 10,
-    orderBy = { createdAt: 'desc' } /* 혹시몰라서 넣었음 */,
-    ...rest
-  }) {
+  async findAll({ id, page = 1, limit = 10 }) {
     const skip = (page - 1) * limit;
     const where = { challengeId: id };
 
@@ -45,8 +39,7 @@ export class ChallengeParticipantRepository {
         skip,
         take: limit,
         select: this.#participantSelect,
-        orderBy,
-        ...rest,
+        orderBy: { createdAt: 'desc' } /* 혹시몰라서 넣었음 */,
       }),
       this.#prisma.challengeParticipant.count({ where }),
     ]);
