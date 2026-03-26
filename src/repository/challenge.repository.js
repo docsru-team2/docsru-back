@@ -1,22 +1,16 @@
 export class ChallengeRepository {
   #prisma;
-  
-   const reviewStatusFilter =
-      !isAdmin || viewType === 'LIST'
-        ? { reviewStatus: 'APPROVED' }
-        : reviewStatus
-          ? { reviewStatus }
-          : {};
 
-  #whereCase({ keyword, reviewStatus, userType, userId, ...rest }) {
+  #whereCase({ keyword, reviewStatus, userType, userId, viewType, ...rest }) {
     const isAdmin = userType.toUpperCase() === 'ADMIN';
+
     const reviewStatusFilter =
       !isAdmin || viewType === 'LIST'
         ? { reviewStatus: 'APPROVED' }
         : reviewStatus
           ? { reviewStatus }
           : {};
-    
+
     return {
       ...(keyword?.trim() && {
         title: { contains: keyword.trim(), mode: 'insensitive' },
@@ -72,7 +66,12 @@ export class ChallengeRepository {
     userType,
   }) {
     const skip = (page - 1) * limit;
-    const where = this.#whereCase({ keyword, reviewStatus, userType });
+    const where = this.#whereCase({
+      keyword,
+      reviewStatus,
+      userType,
+      viewType,
+    });
 
     return await Promise.all([
       this.#prisma.challenge.findMany({
