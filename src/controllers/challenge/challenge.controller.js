@@ -1,7 +1,11 @@
 import { BaseController } from '#controllers/base.controller.js';
 import { HTTP_STATUS } from '#constants';
-import { needsLogin } from '#middlewares';
-import {} from './dto/challenge.dto.js';
+import {
+  createChallengeSchema,
+  editChallengeSchema,
+  idParamSchema,
+} from './dto/challenge.dto.js';
+import { validate, checkOwnership } from '#middlewares';
 
 export class ChallengeController extends BaseController {
   #challengeService;
@@ -12,18 +16,66 @@ export class ChallengeController extends BaseController {
   }
 
   routes() {
+    this.router.get('/', (req, res, next) => this.getAll(req, res, next));
     this.router.get(
+      '/:id',
+      validate('params', idParamSchema),
+      (req, res, next) => this.getOne(req, res, next),
+    );
+    this.router.post(
       '/',
-      // needsLogin, 로그인 여부 체크
-      (req, res, next) => this.getAll(req, res, next),
+      validate('body', createChallengeSchema),
+      (req, res, next) => this.create(req, res, next),
     );
-    this.router.get('/:id', (req, res, next) => this.getOne(req, res, next));
+    this.router.patch(
+      '/:id',
+      validate('params', idParamSchema, 'body', editChallengeSchema),
+      checkOwnership(this.#challengeService, 'creatorId'),
+      (req, res, next) => this.update(req, res, next),
+    );
+    this.router.delete(
+      '/:id',
+      validate('params', idParamSchema),
+      checkOwnership(this.#challengeService, 'creatorId'),
+      (req, res, next) => this.delete(req, res, next),
+    );
 
-    this.router.post('/', needsLogin, (req, res, next) =>
-      this.create(req, res, next),
+    this.router.get(
+      '/:id/participants',
+      validate('params', idParamSchema),
+      (req, res, next) => this.getParticipants(req, res, next),
     );
-    this.router.post('/:id/participants', needsLogin, (req, res, next) =>
-      this.join(req, res, next),
+    this.router.post(
+      '/:id/participants',
+      validate('params', idParamSchema),
+      (req, res, next) => this.join(req, res, next),
+    );
+
+    this.router.get(
+      '/me/applied',
+      validate('params', idParamSchema),
+      (req, res, next) => {
+        req.query.userId = req.user.id;
+        return this.getAll(req, res, next);
+      },
+    );
+    this.router.get(
+      '/me/ongoing',
+      validate('params', idParamSchema),
+      (req, res, next) => {
+        req.query.userId = req.user.id;
+        req.query.progressStatus = 'OPEN';
+        return this.getAll(req, res, next);
+      },
+    );
+    this.router.get(
+      '/me/completed',
+      validate('params', idParamSchema),
+      (req, res, next) => {
+        req.query.userId = req.user.id;
+        req.query.progressStatus = 'CLOSED';
+        return this.getAll(req, res, next);
+      },
     );
 
     return this.router;
@@ -33,7 +85,7 @@ export class ChallengeController extends BaseController {
     try {
       const { page, limit, sort, keyword, reviewStatus } = req.query;
 
-      const result = await this.#challengeService.getPublicChallenges({
+      const result = await this.#challengeService.findAll({
         page: Number(page) || 1,
         limit: Number(limit) || 10,
         sort,
@@ -47,64 +99,73 @@ export class ChallengeController extends BaseController {
     }
   }
 
-  async getOne(req, res) {
-    const { id } = req.params;
-    const challenge = await this.#challengeService.getChallengeDetail(id);
-    res.status(HTTP_STATUS.OK).json(challenge);
+  async getOne(req, res, next) {
+    try {
+      const { id } = req.params;
+      const challenge = await this.#challengeService.getChallengeDetail(id);
+      res.status(HTTP_STATUS.OK).json(challenge);
+    } catch (error) {
+      next(error);
+    }
   }
 
-  async create(req, res) {
-    const {
-      title,
-      sourceUrl,
-      field,
-      documentType,
-      description,
-      deadline,
-      maxParticipants,
-    } = req.body;
-    const newChallenge = await this.#challengeService.registerChallenge({
-      title,
-      sourceUrl,
-      field,
-      documentType,
-      description,
-      deadline,
-      maxParticipants,
-    });
-    res.status(HTTP_STATUS.CREATED).json(newChallenge);
+  async create(req, res, next) {
+    try {
+      const data = req.body;
+      const newChallenge = await this.#challengeService.make({
+        ...data,
+        creatorId: req.user.id,
+      });
+      res.status(HTTP_STATUS.CREATED).json(newChallenge);
+    } catch (error) {
+      next(error);
+    }
   }
 
-  async update(req, res) {
-    const { id } = req.params;
-    const {
-      title,
-      sourceUrl,
-      field,
-      documentType,
-      description,
-      deadline,
-      maxParticipants,
-    } = req.body;
-    const updatedChallenge = await this.#challengeService.changeChallenge(
-      id,
-      req.user.id,
-      {
-        title,
-        sourceUrl,
-        field,
-        documentType,
-        description,
-        deadline,
-        maxParticipants,
-      },
-    );
-    res.status(HTTP_STATUS.OK).json(updatedChallenge);
+  async update(req, res, next) {
+    try {
+      const { id } = req.params;
+      const data = req.body;
+      const updatedChallenge = await this.#challengeService.edit(id, req.user.id, data);
+      res.status(HTTP_STATUS.OK).json(updatedChallenge);
+    } catch (error) {
+      next(error);
+    }
   }
 
-  async delete(req, res) {
-    const { id } = req.params;
-    await this.#challengeService.deleteAccount(id, req.user.id);
-    res.sendStatus(HTTP_STATUS.NO_CONTENT);
+  async delete(req, res, next) {
+    try {
+      const { id } = req.params;
+      await this.#challengeService.delete(id, req.user.id);
+      res.sendStatus(HTTP_STATUS.NO_CONTENT);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async join(req, res, next) {
+    try {
+      const { id } = req.params;
+      const result = await this.#challengeService.joinChallenge(
+        id,
+        req.user.id,
+      );
+      res.status(HTTP_STATUS.CREATED).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getParticipants(req, res, next) {
+    try {
+      const { id } = req.params;
+      const result = await this.#challengeService.getParticipants(
+        id,
+        req.query,
+      );
+      res.status(HTTP_STATUS.OK).json(result);
+    } catch (error) {
+      next(error);
+    }
   }
 }

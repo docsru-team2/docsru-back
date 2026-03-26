@@ -15,6 +15,7 @@ export class TokenProvider {
       {
         userId: user.id,
         nickname: user.nickname,
+        userType: user.userType,
       },
       this.#accessSecret,
       { expiresIn: '1d' },

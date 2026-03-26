@@ -50,7 +50,7 @@ export const createContainer = () => {
     challengeRepository: asClass(ChallengeRepository, {
       lifetime: Lifetime.SINGLETON,
     }),
-    ChallengeParticipantRepository: asClass(ChallengeParticipantRepository, {
+    challengeParticipantRepository: asClass(ChallengeParticipantRepository, {
       lifetime: Lifetime.SINGLETON,
     }),
     draftRepository: asClass(DraftRepository, {

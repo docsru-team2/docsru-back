@@ -5,7 +5,7 @@ export class UserRepository {
     this.#prisma = prisma;
   }
 
-  get #selectedUserData() {
+  get #selectCase() {
     return {
       id: true,
       email: true,
@@ -20,26 +20,15 @@ export class UserRepository {
 
   findAll() {
     return this.#prisma.user.findMany({
-      select: this.#selectedUserData,
+      select: this.#selectCase,
     });
   }
 
-  findById(id) {
-    return this.#prisma.user.findUnique({
-      where: {
-        id: id,
-      },
-      select: this.#selectedUserData,
-    });
-  }
-
-  findByEmail(email, { includePassword = false } = {}) {
-    return this.#prisma.user.findUnique({
-      where: {
-        email,
-      },
+  async findBy(where, { includePassword = false } = {}) {
+    return await this.#prisma.user.findUnique({
+      where,
       select: {
-        ...this.#selectedUserData,
+        ...this.#selectCase,
         ...(includePassword ? { passwordHash: true } : {}),
       },
     });
@@ -48,7 +37,7 @@ export class UserRepository {
   create(data) {
     return this.#prisma.user.create({
       data,
-      select: this.#selectedUserData,
+      select: this.#selectCase,
     });
   }
 
@@ -58,7 +47,7 @@ export class UserRepository {
         id: id,
       },
       data,
-      select: this.#selectedUserData,
+      select: this.#selectCase,
     });
   }
 
@@ -73,14 +62,14 @@ export class UserRepository {
   findBySocialAccount(provider, providerAccountId) {
     return this.#prisma.user.findFirst({
       where: { provider, providerAccountId },
-      select: this.#selectedUserData,
+      select: this.#selectCase,
     });
   }
 
   createWithSocialAccount(data) {
     return this.#prisma.user.create({
       data,
-      select: this.#selectedUserData,
+      select: this.#selectCase,
     });
   }
 
