@@ -31,7 +31,9 @@ export class AuthController extends BaseController {
       this.login(req, res),
     );
     this.router.post('/logout', (req, res) => this.logout(req, res));
-    this.router.post('/refresh', (req, res) => this.refresh(req, res));
+    this.router.post('/refresh', (req, res, next) =>
+      this.refresh(req, res, next),
+    );
 
     this.router.get(
       '/social/:provider/sign-in',
@@ -54,44 +56,44 @@ export class AuthController extends BaseController {
   // 일반 회원가입
   async signUp(req, res) {
     const { email, password, nickname } = req.body;
-    const { user, tokens } = await this.#authService.signUp({
+    const { user, accessToken, refreshToken } = await this.#authService.signUp({
       email,
       password,
       nickname,
     });
 
-    this.#cookieProvider.setAuthCookies(res, tokens);
-    res
-      .status(HTTP_STATUS.CREATED)
-      .json({ user, accessToken: tokens.accessToken });
+    this.#cookieProvider.setAuthCookies(res, { refreshToken });
+    res.status(HTTP_STATUS.CREATED).json({ user, accessToken });
   }
 
   //일반 로그인
   async login(req, res) {
     const { email, password } = req.body;
-    const { user, tokens } = await this.#authService.login({
+    const { user, accessToken, refreshToken } = await this.#authService.login({
       email,
       password,
     });
 
-    this.#cookieProvider.setAuthCookies(res, tokens);
-    res.status(HTTP_STATUS.OK).json({ user, accessToken: tokens.accessToken });
+    this.#cookieProvider.setAuthCookies(res, { refreshToken });
+    res.status(HTTP_STATUS.OK).json({ user, accessToken });
   }
 
   //일반 로그아웃
   async logout(req, res) {
     this.#cookieProvider.clearAuthCookies(res);
-    res.sendStatus(HTTP_STATUS.NO_CONTENT);
+    res
+      .status(HTTP_STATUS.NO_CONTENT)
+      .json({ success: true, message: '로그아웃에 성공했습니다.' });
   }
 
   //토큰 리프레시
   async refresh(req, res, next) {
     try {
-      const { refreshToken } = req.cookies;
-      const { accessToken, tokens } =
-        await this.#authService.refreshTokens(refreshToken);
+      const { refreshToken: staleRefreshToken } = req.cookies;
+      const { accessToken, refreshToken: freshtoken } =
+        await this.#authService.refreshTokens(staleRefreshToken);
 
-      this.#cookieProvider.setAuthCookies(res, tokens);
+      this.#cookieProvider.setAuthCookies(res, { refreshToken: freshtoken });
 
       res.status(HTTP_STATUS.OK).json({ accessToken });
     } catch (error) {
