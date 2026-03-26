@@ -36,7 +36,7 @@ export class ChallengeParticipantRepository {
     const skip = (page - 1) * limit;
     const where = { challengeId: id };
 
-    const [data, totalCount] = await Promise.all([
+    const [list, totalCount] = await Promise.all([
       this.#prisma.challengeParticipant.findMany({
         where,
         skip,
@@ -46,7 +46,7 @@ export class ChallengeParticipantRepository {
       }),
       this.#prisma.challengeParticipant.count({ where }),
     ]);
-    return { data, totalCount };
+    return { list, totalCount };
   }
 
   //승인된 챌린지 참여
