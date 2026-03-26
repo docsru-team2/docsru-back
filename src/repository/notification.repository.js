@@ -21,20 +21,29 @@ export class NotificationRepository {
   }
 
   //내 알림 목록 조회
-  findAll(id, { page = 1, limit = 10 }) {
-    const skip = (page - 1) * limit;
-    const where = { userId: id };
+  findAllByUserId(id, { cursor, limit = 10 }) {
+    const where = { userId: id, ...(cursor && { id: { lt: cursor } }) };
 
     return Promise.all([
       this.#prisma.notification.findMany({
         where,
-        skip,
-        take: limit,
+        take: limit + 1,
+        orderBy: { createdAt: 'desc' },
         select: notificationSelect,
       }),
       this.#prisma.notification.count({ where }), // totalCount
       this.#prisma.notification.count({ where: { ...where, isRead: false } }), // unreadCount
     ]);
+  }
+
+  // 알림 단건 조회
+  findById(id) {
+    return this.#prisma.notification.findUnique({
+      where: {
+        id,
+      },
+      select: notificationSelect,
+    });
   }
 
   // 알림 생성 (내부에서만 호출)
@@ -61,8 +70,23 @@ export class NotificationRepository {
     return this.#prisma.notification.updateMany({
       where: {
         userId,
+        isRead: false,
       },
       data: { isRead: true },
+    });
+  }
+
+  // 알람 삭제 (단건)
+  deleteOne(id) {
+    return this.#prisma.notification.delete({
+      where: { id },
+    });
+  }
+
+  // 알람 삭제 (전체)
+  deleteAll(userId) {
+    return this.#prisma.notification.deleteMany({
+      where: { userId },
     });
   }
 }

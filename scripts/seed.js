@@ -11,12 +11,12 @@ const DOCUMENT_TYPES = ['OFFICIAL_DOC', 'BLOG', 'BOOK', 'ETC'];
 
 // ──────────────────────── 수량 설정 ────────────────────────
 const COUNT = {
-  users: 100,             // 일반 유저 수
-  openChallenges: 50,     // APPROVED + OPEN
-  closedChallenges: 20,   // APPROVED + CLOSED
-  pendingChallenges: 15,  // PENDING
+  users: 100, // 일반 유저 수
+  openChallenges: 50, // APPROVED + OPEN
+  closedChallenges: 20, // APPROVED + CLOSED
+  pendingChallenges: 15, // PENDING
   rejectedChallenges: 10, // REJECTED
-  draftsPerUser: 2,       // 유저당 임시저장 수
+  draftsPerUser: 2, // 유저당 임시저장 수
 };
 // ───────────────────────────────────────────────────────────
 
@@ -135,7 +135,10 @@ class Seeder {
             maxParticipants: faker.number.int({ min: 5, max: 30 }),
             reviewStatus: 'PENDING',
             creatorId:
-              users[(i + COUNT.openChallenges + COUNT.closedChallenges) % users.length].id,
+              users[
+                (i + COUNT.openChallenges + COUNT.closedChallenges) %
+                  users.length
+              ].id,
           },
         }),
       );
@@ -178,11 +181,15 @@ class Seeder {
     const participants = [];
 
     // 유저 한 명당 챌린지 1개만 참여
-    const shuffledChallenges = [...approvedChallenges].sort(() => Math.random() - 0.5);
+    const shuffledChallenges = [...approvedChallenges].sort(
+      () => Math.random() - 0.5,
+    );
 
     for (const user of users) {
       // 참여할 챌린지를 랜덤으로 1개 선택 (본인이 만든 챌린지 제외)
-      const eligible = shuffledChallenges.filter((c) => c.creatorId !== user.id);
+      const eligible = shuffledChallenges.filter(
+        (c) => c.creatorId !== user.id,
+      );
       if (eligible.length === 0) continue;
 
       const challenge = eligible[Math.floor(Math.random() * eligible.length)];
@@ -214,7 +221,9 @@ class Seeder {
             challengeId: challenge.id,
             userId: user.id,
             title: faker.lorem.sentence({ min: 3, max: 7 }),
-            content: faker.lorem.paragraphs(faker.number.int({ min: 3, max: 6 })),
+            content: faker.lorem.paragraphs(
+              faker.number.int({ min: 3, max: 6 }),
+            ),
             isDeleted: Math.random() < 0.05,
           },
         });
@@ -261,7 +270,9 @@ class Seeder {
           data: {
             submissionId: submission.id,
             userId: user.id,
-            content: faker.lorem.paragraphs(faker.number.int({ min: 1, max: 3 })),
+            content: faker.lorem.paragraphs(
+              faker.number.int({ min: 1, max: 3 }),
+            ),
           },
         });
         feedbacks.push(feedback);
@@ -287,7 +298,9 @@ class Seeder {
             challengeId: challenge.id,
             userId: user.id,
             title: faker.lorem.sentence({ min: 3, max: 6 }),
-            content: faker.lorem.paragraphs(faker.number.int({ min: 2, max: 4 })),
+            content: faker.lorem.paragraphs(
+              faker.number.int({ min: 2, max: 4 }),
+            ),
           },
         });
         drafts.push(draft);
@@ -357,7 +370,9 @@ class Seeder {
 
     // 피드백 생성 알림
     for (const feedback of feedbacks.slice(0, 30)) {
-      const submission = submissions.find((s) => s.id === feedback.submissionId);
+      const submission = submissions.find(
+        (s) => s.id === feedback.submissionId,
+      );
       if (!submission) continue;
       notis.push(
         await this.#prisma.notification.create({
@@ -389,7 +404,9 @@ class Seeder {
     console.log('✅ 기존 데이터 삭제 완료');
 
     const { admin, users } = await this.#seedUsers(hashedPassword);
-    console.log(`✅ 유저 ${users.length + 1}명 생성 (admin 1 + user ${users.length})`);
+    console.log(
+      `✅ 유저 ${users.length + 1}명 생성 (admin 1 + user ${users.length})`,
+    );
 
     const challenges = await this.#seedChallenges(users);
     console.log(
@@ -420,12 +437,12 @@ class Seeder {
     );
     console.log(`✅ 알림 ${notifications.length}개 생성`);
 
-    console.log('');
+    console.log('--------');
     console.log('🔑 테스트 계정 (공통 비밀번호: ' + SEED_PASSWORD + ')');
     console.log('   docthru@docthru.com   (ADMIN / EXPERT)');
     console.log('   user1~50@docsru.com   (USER / EXPERT)');
     console.log('   user51~100@docsru.com (USER / NORMAL)');
-    console.log('');
+    console.log('--------');
     console.log('✅ 시딩 완료');
   }
 }

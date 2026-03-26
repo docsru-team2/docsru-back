@@ -5,22 +5,29 @@ export class AdminService {
   #challengeRepository;
   #submissionRepository;
   #feedbackRepository;
-  #notificationRepository;
+  #notificationService;
 
   constructor({
     challengeRepository,
     submissionRepository,
     feedbackRepository,
-    notificationRepository,
+    notificationService,
   }) {
     this.#challengeRepository = challengeRepository;
     this.#submissionRepository = submissionRepository;
     this.#feedbackRepository = feedbackRepository;
-    this.#notificationRepository = notificationRepository;
+    this.#notificationService = notificationService;
   }
 
   //챌린지 목록 조회
-  async getChallengeList({ page, limit, sort, keyword, reviewStatus, viewType }) {
+  async getChallengeList({
+    page,
+    limit,
+    sort,
+    keyword,
+    reviewStatus,
+    viewType,
+  }) {
     const [list, totalCount] = await this.#challengeRepository.findAll({
       page,
       limit,
@@ -36,7 +43,7 @@ export class AdminService {
   //챌린지 상세 조회
   async getChallengeDetail(id) {
     const challenge = await this.#challengeRepository.findById(id, {
-      role: 'ADMIN',
+      userType: 'ADMIN',
     });
 
     if (!challenge) throw new NotFoundException(ERROR_CODE.CHALLENGE_NOT_FOUND);
@@ -47,7 +54,7 @@ export class AdminService {
   // 챌린지 승인
   async approveChallenge(id, adminId) {
     const challenge = await this.#challengeRepository.findById(id, {
-      role: 'ADMIN',
+      userType: 'ADMIN',
       include: { creator: true },
     });
 
@@ -64,13 +71,12 @@ export class AdminService {
       progressStatus: 'OPEN',
     });
 
-    // await this.#notificationRepository.create({
-    //   userId: challenge.creator.id,
-    //   actorUserId: adminId,
-    //   type: 'CHALLENGE_ADMIN_APPROVED',
-    //   content: '챌린지 신청이 승인되었습니다.',
-    //   targetId: id,
-    // });
+    await this.#notificationService.notify(challenge.creator.id, {
+      actorUserId: adminId,
+      type: 'CHALLENGE_ADMIN_APPROVED',
+      content: '챌린지 신청이 승인되었습니다.',
+      targetId: id,
+    });
 
     return updated;
   }
@@ -78,7 +84,7 @@ export class AdminService {
   // 챌린지 거절
   async rejectChallenge(id, adminId, { rejectReason }) {
     const challenge = await this.#challengeRepository.findById(id, {
-      role: 'ADMIN',
+      userType: 'ADMIN',
       include: { creator: true },
     });
     if (!challenge) throw new NotFoundException(ERROR_CODE.CHALLENGE_NOT_FOUND);
@@ -97,13 +103,12 @@ export class AdminService {
       rejectReason,
     });
 
-    // await this.#notificationRepository.create({
-    //   userId: challenge.creator.id,
-    //   actorUserId: adminId,
-    //   type: 'CHALLENGE_ADMIN_REJECTED',
-    //   content: '챌린지 신청이 거절되었습니다.',
-    //   targetId: id,
-    // });
+    await this.#notificationService.notify(challenge.creator.id, {
+      actorUserId: adminId,
+      type: 'CHALLENGE_ADMIN_REJECTED',
+      content: '챌린지 신청이 거절되었습니다.',
+      targetId: id,
+    });
 
     return updated;
   }
@@ -111,7 +116,7 @@ export class AdminService {
   // 챌린지 삭제 (soft delete)
   async deleteChallenge(id, adminId, { deleteReason }) {
     const challenge = await this.#challengeRepository.findById(id, {
-      role: 'ADMIN',
+      userType: 'ADMIN',
       include: { creator: true },
     });
 
@@ -129,13 +134,12 @@ export class AdminService {
       deleteReason,
     });
 
-    // await this.#notificationRepository.create({
-    //   userId: challenge.creator.id,
-    //   actorUserId: adminId,
-    //   type: 'CHALLENGE_ADMIN_REJECTED',
-    //   content: '챌린지가 삭제되었습니다.',
-    //   targetId: id,
-    // });
+    await this.#notificationService.notify(challenge.creator.id, {
+      actorUserId: adminId,
+      type: 'CHALLENGE_ADMIN_DELETED',
+      content: '챌린지가 삭제되었습니다.',
+      targetId: id,
+    });
 
     return updated;
   }
@@ -143,7 +147,7 @@ export class AdminService {
   // 챌린지 수정
   async editChallenge(id, adminId, data) {
     const challenge = await this.#challengeRepository.findById(id, {
-      role: 'ADMIN',
+      userType: 'ADMIN',
       include: { creator: true },
     });
 
@@ -151,13 +155,12 @@ export class AdminService {
 
     const updated = await this.#challengeRepository.update(id, data);
 
-    // await this.#notificationRepository.create({
-    //   userId: challenge.creator.id,
-    //   actorUserId: adminId,
-    //   type: 'CHALLENGE_ADMIN_UPDATED',
-    //   content: '챌린지 신청을 수정하였습니다.',
-    //   targetId: id,
-    // });
+    await this.#notificationService.notify(challenge.creator.id, {
+      actorUserId: adminId,
+      type: 'CHALLENGE_ADMIN_UPDATED',
+      content: '챌린지 신청을 수정하였습니다.',
+      targetId: id,
+    });
 
     return updated;
   }
@@ -173,13 +176,12 @@ export class AdminService {
 
     const updated = await this.#submissionRepository.update(id, data);
 
-    // await this.#notificationRepository.create({
-    //   userId: submisson.user.id,
-    //   actorUserId: adminId,
-    //   type: 'SUBMISSION_UPDATED',
-    //   content: '작업물이 수정되었습니다.',
-    //   targetId: id,
-    // });
+    await this.#notificationService.notify(submisson.creator.id, {
+      actorUserId: adminId,
+      type: 'SUBMISSION_UPDATED',
+      content: '작업물이 수정되었습니다.',
+      targetId: id,
+    });
 
     return updated;
   }
@@ -200,13 +202,12 @@ export class AdminService {
       isDeleted: true,
     });
 
-    // await this.#notificationRepository.create({
-    //   userId: submisson.user.id,
-    //   actorUserId: adminId,
-    //   type: 'SUBMISSION_DELETED',
-    //   content: '작업물이 삭제되었습니다.',
-    //   targetId: id,
-    // });
+    await this.#notificationService.notify(submisson.creator.id, {
+      actorUserId: adminId,
+      type: 'SUBMISSION_DELETED',
+      content: '작업물이 삭제되었습니다.',
+      targetId: id,
+    });
 
     return updated;
   }
@@ -220,13 +221,12 @@ export class AdminService {
 
     const updated = await this.#feedbackRepository.delete(id);
 
-    // await this.#notificationRepository.create({
-    //   userId: feeback.user.id,
-    //   actorUserId: adminId,
-    //   type: 'SUBMISSION_DELETED',
-    //   content: '작업물이 삭제되었습니다.',
-    //   targetId: id,
-    // });
+    await this.#notificationService.notify(feeback.creator.id, {
+      actorUserId: adminId,
+      type: 'FEEDBACK_ADMIN_DELETED',
+      content: '피드백이 삭제되었습니다.',
+      targetId: id,
+    });
 
     return updated;
   }
