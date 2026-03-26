@@ -20,15 +20,22 @@ export class AdminService {
   }
 
   //챌린지 목록 조회
-  async getChallengeList({ page, limit, sort, keyword, reviewStatus, viewType }) {
+  async getChallengeList({
+    page,
+    limit,
+    orderBy,
+    keyword,
+    reviewStatus,
+    viewType,
+  }) {
     const [list, totalCount] = await this.#challengeRepository.findAll({
-      page,
-      limit,
-      sort,
+      page: Number(page) || 1,
+      limit: Number(limit) || 10,
+      orderBy: orderBy || { createdAt: 'desc' },
       keyword,
       viewType,
       reviewStatus,
-      isAdmin: true,
+      userType: 'ADMIN',
     });
     return { list, totalCount, hasNext: page * limit < totalCount };
   }
@@ -36,7 +43,7 @@ export class AdminService {
   //챌린지 상세 조회
   async getChallengeDetail(id) {
     const challenge = await this.#challengeRepository.findById(id, {
-      role: 'ADMIN',
+      userType: 'ADMIN',
     });
 
     if (!challenge) throw new NotFoundException(ERROR_CODE.CHALLENGE_NOT_FOUND);
@@ -47,8 +54,7 @@ export class AdminService {
   // 챌린지 승인
   async approveChallenge(id, adminId) {
     const challenge = await this.#challengeRepository.findById(id, {
-      role: 'ADMIN',
-      include: { creator: true },
+      userType: 'ADMIN',
     });
 
     if (!challenge) throw new NotFoundException(ERROR_CODE.CHALLENGE_NOT_FOUND);
@@ -78,8 +84,7 @@ export class AdminService {
   // 챌린지 거절
   async rejectChallenge(id, adminId, { rejectReason }) {
     const challenge = await this.#challengeRepository.findById(id, {
-      role: 'ADMIN',
-      include: { creator: true },
+      userType: 'ADMIN',
     });
     if (!challenge) throw new NotFoundException(ERROR_CODE.CHALLENGE_NOT_FOUND);
     if (!rejectReason)
@@ -111,8 +116,7 @@ export class AdminService {
   // 챌린지 삭제 (soft delete)
   async deleteChallenge(id, adminId, { deleteReason }) {
     const challenge = await this.#challengeRepository.findById(id, {
-      role: 'ADMIN',
-      include: { creator: true },
+      userType: 'ADMIN',
     });
 
     if (!challenge) throw new NotFoundException(ERROR_CODE.CHALLENGE_NOT_FOUND);
@@ -143,8 +147,7 @@ export class AdminService {
   // 챌린지 수정
   async editChallenge(id, adminId, data) {
     const challenge = await this.#challengeRepository.findById(id, {
-      role: 'ADMIN',
-      include: { creator: true },
+      userType: 'ADMIN',
     });
 
     if (!challenge) throw new NotFoundException(ERROR_CODE.CHALLENGE_NOT_FOUND);
@@ -164,9 +167,7 @@ export class AdminService {
 
   // 작업물 수정
   async editSubmission(id, adminId, data) {
-    const submisson = await this.#submissionRepository.findById(id, {
-      include: { user: true },
-    });
+    const submisson = await this.#submissionRepository.findById(id, {});
 
     if (!submisson)
       throw new NotFoundException(ERROR_CODE.SUBMISSION_NOT_FOUND);
@@ -186,9 +187,7 @@ export class AdminService {
 
   // 작업물 삭제(soft delete)
   async deleteSubmission(id, adminId) {
-    const submisson = await this.#submissionRepository.findById(id, {
-      include: { user: true },
-    });
+    const submisson = await this.#submissionRepository.findById(id, {});
 
     if (!submisson)
       throw new NotFoundException(ERROR_CODE.SUBMISSION_NOT_FOUND);
@@ -212,9 +211,7 @@ export class AdminService {
   }
 
   async deleteFeedback(id, adminId) {
-    const feeback = await this.#feedbackRepository.findById(id, {
-      include: { user: true },
-    });
+    const feeback = await this.#feedbackRepository.findById(id, {});
 
     if (!feeback) throw new NotFoundException(ERROR_CODE.FEEDBACK_NOT_FOUND);
 
