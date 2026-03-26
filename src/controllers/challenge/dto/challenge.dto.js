@@ -13,4 +13,17 @@ export const createChallengeSchema = z.object({
   sourceUrl: z.url(),
   field: z.enum(['NEXT_JS', 'MODERN_JS', 'WEB', 'ETC']),
   documentType: z.enum(['OFFICIAL_DOC', 'BLOG', 'BOOK', 'ETC']),
+  description: z.string(),
+  deadline: z.string(),
+  maxParticipants: z.number(),
+});
+
+export const editChallengeSchema = z.object({
+  title: z.string().optional(),
+  sourceUrl: z.url().optional(),
+  field: z.enum(['NEXT_JS', 'MODERN_JS', 'WEB', 'ETC']),
+  documentType: z.enum(['OFFICIAL_DOC', 'BLOG', 'BOOK', 'ETC']),
+  description: z.string().optional(),
+  deadline: z.date().optional(),
+  maxParticipants: z.number().optional(),
 });
