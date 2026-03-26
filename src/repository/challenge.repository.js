@@ -1,16 +1,20 @@
-const ORDER_BY_MAP = {
-  CREATED_DESC: { createdAt: 'desc' }, //신청일 최신순
-  CREATED_ASC: { createdAt: 'asc' }, //신청일 오래된 순
-  DEADLINE_ASC: { deadline: 'asc' }, //마감기한 빠른순
-  DEADLINE_DESC: { deadline: 'desc' }, //마감기한 느린순
-};
-
-const orderByCheck = (sort) => {
-  return ORDER_BY_MAP[sort] || ORDER_BY_MAP.CREATED_DESC;
-};
-
 export class ChallengeRepository {
   #prisma;
+  #whereCase({ keyword, reviewStatus, userType, userId, ...rest }) {
+    const isAdmin = userType.toUpperCase() === 'ADMIN';
+    return {
+      ...(keyword?.trim() && {
+        title: { contains: keyword.trim(), mode: 'insensitive' },
+      }),
+      ...(!isAdmin
+        ? { reviewStatus: 'APPROVED' }
+        : reviewStatus
+          ? { reviewStatus }
+          : {}),
+      ...(userId && { participants: { some: { userId } } }),
+      ...rest,
+    };
+  }
 
   constructor({ prisma }) {
     this.#prisma = prisma;
@@ -27,6 +31,9 @@ export class ChallengeRepository {
       deadline: true,
       createdAt: true,
       updatedAt: true,
+      _count: {
+        select: { participants: true },
+      },
     };
   }
 
@@ -47,32 +54,20 @@ export class ChallengeRepository {
   async findAll({
     page = 1,
     limit = 10,
-    sort = 'CREATED_DESC',
+    orderBy,
     keyword,
     reviewStatus,
-    isAdmin = false,
+    userType,
   }) {
     const skip = (page - 1) * limit;
-    const where = {
-      ...(keyword?.trim() && {
-        title: {
-          contains: keyword.trim(),
-          mode: 'insensitive',
-        },
-      }),
-      ...(!isAdmin
-        ? { reviewStatus: 'APPROVED' }
-        : reviewStatus
-          ? { reviewStatus }
-          : {}),
-    };
+    const where = this.#whereCase({ keyword, reviewStatus, userType });
 
     return await Promise.all([
       this.#prisma.challenge.findMany({
         where,
         skip,
         take: limit,
-        orderBy: orderByCheck(sort),
+        orderBy,
         select: this.#challengeListSelect,
       }),
       this.#prisma.challenge.count({ where }),
@@ -80,34 +75,29 @@ export class ChallengeRepository {
   }
 
   // 내가 참여 중인 챌린지 OR 완료된 챌린지 OR 신청한 챌린지 - 목록 조회
-  findByMyList({
+  async findByMyList({
     page = 1,
     limit = 10,
     keyword,
     userId,
     reviewStatus = 'APPROVED',
     progressStatus = 'OPEN',
+    orderBy,
   }) {
     const skip = (page - 1) * limit;
-    const where = {
-      ...(keyword?.trim() && {
-        title: {
-          contains: keyword.trim(),
-          mode: 'insensitive',
-        },
-      }),
+    const where = this.#whereCase({
+      keyword,
+      userId,
       reviewStatus,
-      ...(progressStatus && { progressStatus }),
-      participants: {
-        some: { userId },
-      },
-    };
+      progressStatus,
+    });
 
-    return Promise.all([
+    return await Promise.all([
       this.#prisma.challenge.findMany({
         where,
         skip,
         take: limit,
+        orderBy,
         select: this.#challengeListSelect,
       }),
       this.#prisma.challenge.count({ where }),
@@ -115,11 +105,13 @@ export class ChallengeRepository {
   }
 
   // 챌린지 상세 조회
-  findById(id, { userId, role }) {
+  async findById(id, { userId, userType }) {
+    const isAdmin = userType === 'admin';
+
     return this.#prisma.challenge.findFirst({
       where: {
         id,
-        ...(role === 'ADMIN'
+        ...(isAdmin
           ? {}
           : {
               OR: [
@@ -155,9 +147,7 @@ export class ChallengeRepository {
   // 유저 - 챌린지 신청 수정
   update(id, data) {
     return this.#prisma.challenge.update({
-      where: {
-        id,
-      },
+      where: { id },
       data,
       select: this.#challengeDetailSelect,
     });
@@ -166,9 +156,7 @@ export class ChallengeRepository {
   // 유저 - 챌린지 신청 취소(삭제)
   delete(id) {
     return this.#prisma.challenge.delete({
-      where: {
-        id,
-      },
+      where: { id },
       select: {
         id: true,
       },
