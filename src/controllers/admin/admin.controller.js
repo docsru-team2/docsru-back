@@ -1,6 +1,6 @@
 import { BaseController } from '#controllers/base.controller.js';
 import { HTTP_STATUS } from '#constants';
-import { validate } from '#middlewares';
+import { validate, requireAdmin } from '#middlewares';
 import { idParamSchema } from './dto/admin.dto.js';
 
 export class AdminController extends BaseController {
@@ -12,56 +12,62 @@ export class AdminController extends BaseController {
   }
 
   routes() {
-    this.router.get(
-      '/challenges',
-      // needsLogin,
-      (req, res) => this.getList(req, res),
+    this.router.get('/challenges', requireAdmin, (req, res) =>
+      this.getList(req, res),
     );
 
     this.router.get(
       '/challenges/:id',
+      requireAdmin,
       validate('params', idParamSchema),
       (req, res) => this.getDetail(req, res),
     );
 
     this.router.patch(
       '/challenges/:id/approve',
+      requireAdmin,
       validate('params', idParamSchema),
       (req, res) => this.approveChallenge(req, res),
     );
 
     this.router.patch(
       '/challenges/:id/reject',
+      requireAdmin,
       validate('params', idParamSchema),
       (req, res) => this.rejectChallenge(req, res),
     );
 
     this.router.patch(
       '/challenges/:id/delete',
+      requireAdmin,
       validate('params', idParamSchema),
       (req, res) => this.deleteChallenge(req, res),
     );
 
     this.router.patch(
       '/challenges/:id',
+      requireAdmin,
       validate('params', idParamSchema),
       (req, res) => this.editChallenge(req, res),
     );
 
     this.router.patch(
       '/submissions/:id/delete',
+      requireAdmin,
       validate('params', idParamSchema),
       (req, res) => this.deleteSubmission(req, res),
     );
 
     this.router.patch(
       '/submissions/:id',
+      requireAdmin,
       validate('params', idParamSchema),
       (req, res) => this.editSubmission(req, res),
     );
 
     this.router.delete(
       '/feedbacks/:id',
+      requireAdmin,
       validate('params', idParamSchema),
       (req, res) => this.deleteFeedback(req, res),
     );
@@ -93,8 +99,7 @@ export class AdminController extends BaseController {
   //챌린지 신청 승인 - /challenges/:id/approve
   async approveChallenge(req, res) {
     const { id } = req.params;
-    // const { id: adminId } = req.user;
-    const adminId = '01KMGWE23AVPE8W0VGM5MR03E9'; //어드민 계정 테스트용
+    const { id: adminId } = req.user;
 
     const result = await this.#adminService.approveChallenge(id, adminId);
     res.status(HTTP_STATUS.OK).json(result);
@@ -104,8 +109,7 @@ export class AdminController extends BaseController {
   async rejectChallenge(req, res) {
     const { id } = req.params;
     const { rejectReason } = req.body;
-    // const { id: adminId } = req.user;
-    const adminId = '01KMGWE23AVPE8W0VGM5MR03E9'; //어드민 계정 테스트용
+    const { id: adminId } = req.user;
 
     const result = await this.#adminService.rejectChallenge(id, adminId, {
       rejectReason,
@@ -116,8 +120,7 @@ export class AdminController extends BaseController {
   //챌린지 신청 수정 - /challenges/:id
   async editChallenge(req, res) {
     const { id } = req.params;
-    // const { id: adminId } = req.user;
-    const adminId = '01KMGWE23AVPE8W0VGM5MR03E9'; //어드민 계정 테스트용
+    const { id: adminId } = req.user;
 
     const result = await this.#adminService.editChallenge(
       id,
@@ -131,8 +134,7 @@ export class AdminController extends BaseController {
   async deleteChallenge(req, res) {
     const { id } = req.params;
     const { deleteReason } = req.body;
-    // const { id: adminId } = req.user;
-    const adminId = '01KMGWE23AVPE8W0VGM5MR03E9'; //어드민 계정 테스트용
+    const { id: adminId } = req.user;
 
     const result = await this.#adminService.deleteChallenge(id, adminId, {
       deleteReason,
@@ -144,8 +146,7 @@ export class AdminController extends BaseController {
   //작업물 수정
   async editSubmission(req, res) {
     const { id } = req.params;
-    // const { id: adminId } = req.user;
-    const adminId = '01KMGWE23AVPE8W0VGM5MR03E9'; //어드민 계정 테스트용
+    const { id: adminId } = req.user;
 
     const result = await this.#adminService.editSubmission(
       id,
@@ -159,8 +160,7 @@ export class AdminController extends BaseController {
   //작업물 삭제
   async deleteSubmission(req, res) {
     const { id } = req.params;
-    // const { id: adminId } = req.user;
-    const adminId = '01KMGWE23AVPE8W0VGM5MR03E9'; //어드민 계정 테스트용
+    const { id: adminId } = req.user;
 
     const result = await this.#adminService.deleteSubmission(id, adminId);
 
@@ -170,8 +170,7 @@ export class AdminController extends BaseController {
   //피드백 삭제
   async deleteFeedback(req, res) {
     const { id } = req.params;
-    // const { id: adminId } = req.user;
-    const adminId = '01KMGWE23AVPE8W0VGM5MR03E9'; //어드민 계정 테스트용
+    const { id: adminId } = req.user;
 
     const result = await this.#adminService.deleteFeedback(id, adminId);
 
