@@ -151,6 +151,16 @@ export const ERROR_CODE = {
     code: 'SUBMISSION_LIKE_ALREADY_EXISTS',
     message: '이미 추천한 작업물',
   },
+  NOTIFICATION_ALREADY_EXISTS: {
+    status: HTTP_STATUS.CONFLICT,
+    code: 'NOTIFICATION_ALREADY_EXISTS',
+    message: '이미 해당 알림을 확인함',
+  },
+  NOTIFICATION_ALREADY_ALL_READ: {
+    status: HTTP_STATUS.NOT_FOUND,
+    code: 'NOTIFICATION_ALREADY_ALL_READ',
+    message: '전체 알람 읽음',
+  },
 
   // 500 Internal Server Error
   INTERNAL_SERVER_ERROR: {
