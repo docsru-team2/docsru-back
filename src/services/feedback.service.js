@@ -1,7 +1,7 @@
 import { ERROR_CODE } from '#constants';
 import { ForbiddenException, NotFoundException } from '#exceptions';
 
-export class feedbackService {
+export class FeedbackService {
   #feedbackRepository;
   #submissionRepository;
 
@@ -26,6 +26,11 @@ export class feedbackService {
         hasNext: page * limit < totalCount /* Boolean */,
       },
     };
+  }
+
+  //피드백 단일 조회
+  async findDetail(id) {
+    return await this.findById(id);
   }
 
   //피드백 생성
