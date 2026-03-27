@@ -1,10 +1,3 @@
-const submissionLikeSelect = {
-  id: true,
-  userId: true,
-  submissionId: true,
-  createdAt: true,
-};
-
 export class SubmissionLikeRepository {
   #prisma;
 
@@ -12,16 +5,29 @@ export class SubmissionLikeRepository {
     this.#prisma = prisma;
   }
 
-  //작업물 추천 +1
-  createLike(submissionId, userId) {
+  get #submissionLikeSelect() {
+    return { id: true, userId: true, submissionId: true, createdAt: true };
+  }
+
+  //추천 여부 조회
+  async findIfUserLike(submissionId, userId) {
+    return await this.#prisma.submissionLike.findUnique({
+      where: {
+        submissionId_userId: { submissionId, userId },
+      },
+    });
+  }
+
+  // 작업물 추천
+  like(submissionId, userId) {
     return this.#prisma.submissionLike.create({
       data: { submissionId, userId },
-      select: submissionLikeSelect,
+      select: this.#submissionLikeSelect,
     });
   }
 
   //작업물 추천 취소
-  deleteLike(submissionId, userId) {
+  cancel(submissionId, userId) {
     return this.#prisma.submissionLike.delete({
       where: {
         submissionId_userId: { submissionId, userId },
