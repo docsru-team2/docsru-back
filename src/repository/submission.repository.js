@@ -1,11 +1,13 @@
 export class SubmissionRepository {
   #prisma;
+
   #whereCase(filter, { isAdmin = false } = {}) {
     return {
       ...filter,
       ...(isAdmin ? {} : { isDeleted: false }),
     };
   }
+  
   constructor({ prisma }) {
     this.#prisma = prisma;
   }
