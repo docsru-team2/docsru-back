@@ -112,8 +112,10 @@ export class AuthService {
 
     return {
       user,
-      accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
+      tokens: {
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+      },
     };
   }
 }
