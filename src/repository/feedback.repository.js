@@ -49,15 +49,15 @@ export class FeedbackRepository {
   }
 
   // 피드백 생성
-  create(submissionId, data) {
+  make(submissionId, data) {
     return this.#prisma.feedback.create({
-      data: { ...data, submissionId },
+      data: { submissionId, ...data },
       select: this.#feedbackSelect,
     });
   }
 
   // 피드백 수정
-  update(id, data) {
+  edit(id, data) {
     return this.#prisma.feedback.update({
       where: { id },
       data,
