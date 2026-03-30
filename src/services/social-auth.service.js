@@ -43,7 +43,9 @@ export class SocialAuthService {
     if (!existingUser) {
       const newUser = await this.#userRepository.createWithSocialAccount({
         email,
-        nickname: profile.name || `독수르_${profile.id.slice(0, 5)}`, // 닉네임 없으면 임의로 만들어넣기
+        nickname: profile.name
+          ? `${profile.name}_${profile.id.slice(0, 2)}`
+          : `독수르_${profile.id.slice(0, 2)}`,
         provider: provider.toUpperCase(),
         providerAccountId: profile.id,
         userType: 'USER',
