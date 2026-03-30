@@ -56,13 +56,13 @@ export class AuthController extends BaseController {
   // 일반 회원가입
   async signUp(req, res) {
     const { email, password, nickname } = req.body;
-    const { user, accessToken, refreshToken } = await this.#authService.signUp({
+    const { user, tokens } = await this.#authService.signUp({
       email,
       password,
       nickname,
     });
 
-    this.#cookieProvider.setAuthCookies(res, { accessToken, refreshToken });
+    this.#cookieProvider.setAuthCookies(res, tokens);
     res
       .status(HTTP_STATUS.CREATED)
       .json({ success: true, data: user, message: '회원가입 성공!' });
@@ -71,13 +71,15 @@ export class AuthController extends BaseController {
   //일반 로그인
   async login(req, res) {
     const { email, password } = req.body;
-    const { user, accessToken, refreshToken } = await this.#authService.login({
+    const { user, tokens } = await this.#authService.login({
       email,
       password,
     });
 
-    this.#cookieProvider.setAuthCookies(res, { accessToken, refreshToken });
-    res.status(HTTP_STATUS.OK).json({ user, accessToken });
+    this.#cookieProvider.setAuthCookies(res, tokens);
+    res
+      .status(HTTP_STATUS.OK)
+      .json({ success: true, data: user, message: '회원가입 성공!' });
   }
 
   //일반 로그아웃
