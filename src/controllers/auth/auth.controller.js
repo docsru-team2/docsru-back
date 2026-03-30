@@ -127,7 +127,9 @@ export class AuthController extends BaseController {
       state,
     });
 
-    this.#cookieProvider.setAuthCookies(res, tokens);
+    if (!isNewbie) {
+      this.#cookieProvider.setAuthCookies(res, tokens);
+    }
 
     const { next } = this.#decodeState(state);
     const safeNext = isNewbie ? '/join/welcome' : this.#normalizeNextPath(next);
