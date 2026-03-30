@@ -47,8 +47,10 @@ export class AuthService {
     const tokens = this.#tokenProvider.generateTokens(user);
     return {
       user,
-      accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
+      tokens: {
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+      },
     };
   }
 
@@ -82,8 +84,10 @@ export class AuthService {
 
     return {
       user,
-      accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
+      tokens: {
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+      },
     };
   }
 
