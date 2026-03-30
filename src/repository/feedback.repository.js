@@ -24,7 +24,7 @@ export class FeedbackRepository {
   }
 
   //피드백 목록 조회
-  findAll(id, { page = 1, limit = 10 } = {}) {
+  findAll(id, { page = 1, limit = 3, orderBy } = {}) {
     const skip = (page - 1) * limit;
     const where = { submissionId: id };
 
@@ -34,7 +34,7 @@ export class FeedbackRepository {
         skip,
         take: limit,
         select: this.#feedbackSelect,
-        orderBy: { createdAt: 'desc' },
+        orderBy: orderBy ? { [orderBy]: 'desc' } : { createdAt: 'desc' },
       }),
       this.#prisma.feedback.count({ where }),
     ]);
