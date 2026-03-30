@@ -12,7 +12,7 @@ export class SocialAuthService {
   }
 
   #random() {
-    return Math.floor(Math.random() * 99999) + 1;
+    return Math.floor(Math.random() * 999) + 1;
   }
 
   async loginOrSignUp({ provider, code, state }) {
@@ -47,9 +47,7 @@ export class SocialAuthService {
     if (!existingUser) {
       const newUser = await this.#userRepository.createWithSocialAccount({
         email,
-        nickname: profile.name
-          ? `${profile.name}${this.#random()}`
-          : `독수르${this.#random()}`,
+        nickname: `G${this.#random()}`,
         provider: provider.toUpperCase(),
         providerAccountId: profile.id,
         userType: 'USER',
