@@ -27,6 +27,9 @@ export class AdminService {
     keyword,
     reviewStatus,
     viewType,
+    field,
+    documentType,
+    progressStatus,
   }) {
     const [list, totalCount] = await this.#challengeRepository.findAll({
       page: Number(page) || 1,
@@ -36,6 +39,9 @@ export class AdminService {
       viewType,
       reviewStatus,
       userType: 'ADMIN',
+      field,
+      documentType,
+      progressStatus,
     });
     return { list, totalCount, hasNext: page * limit < totalCount };
   }

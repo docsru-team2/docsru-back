@@ -73,7 +73,7 @@ export class ChallengeController extends BaseController {
 
   async getAll(req, res, next) {
     try {
-      const { page, limit, orderBy, keyword, reviewStatus } = req.query;
+      const { page, limit, orderBy, keyword, reviewStatus, field, documentType, progressStatus } = req.query;
 
       const result = await this.#challengeService.findAll({
         page: Number(page) || 1,
@@ -81,6 +81,9 @@ export class ChallengeController extends BaseController {
         orderBy,
         keyword,
         reviewStatus,
+        field,
+        documentType,
+        progressStatus,
       });
 
       res.status(HTTP_STATUS.OK).json(result);

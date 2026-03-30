@@ -7,6 +7,9 @@ export class ChallengeRepository {
     userType = 'USER',
     userId,
     viewType,
+    field,
+    documentType,
+    progressStatus,
     ...rest
   } = {}) {
     const { userId: _, ...pureRest } = rest;
@@ -29,6 +32,11 @@ export class ChallengeRepository {
           some: { userId: userId },
         },
       }),
+      ...(field && {
+        field: Array.isArray(field) ? { in: field } : field,
+      }),
+      ...(documentType && { documentType }),
+      ...(progressStatus && { progressStatus }),
       ...pureRest,
     };
   }
@@ -77,6 +85,9 @@ export class ChallengeRepository {
     reviewStatus,
     viewType,
     userType,
+    field,
+    documentType,
+    progressStatus,
   }) {
     const skip = (page - 1) * limit;
     const where = this.#whereCase({
@@ -84,6 +95,9 @@ export class ChallengeRepository {
       reviewStatus,
       userType,
       viewType,
+      field,
+      documentType,
+      progressStatus,
     });
 
     return await Promise.all([
