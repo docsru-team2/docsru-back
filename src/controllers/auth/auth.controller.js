@@ -62,8 +62,10 @@ export class AuthController extends BaseController {
       nickname,
     });
 
-    this.#cookieProvider.setAuthCookies(res, { refreshToken });
-    res.status(HTTP_STATUS.CREATED).json({ user, accessToken });
+    this.#cookieProvider.setAuthCookies(res, { accessToken, refreshToken });
+    res
+      .status(HTTP_STATUS.CREATED)
+      .json({ success: true, data: user, message: '회원가입 성공!' });
   }
 
   //일반 로그인
@@ -74,7 +76,7 @@ export class AuthController extends BaseController {
       password,
     });
 
-    this.#cookieProvider.setAuthCookies(res, { refreshToken });
+    this.#cookieProvider.setAuthCookies(res, { accessToken, refreshToken });
     res.status(HTTP_STATUS.OK).json({ user, accessToken });
   }
 
@@ -89,13 +91,13 @@ export class AuthController extends BaseController {
   //토큰 리프레시
   async refresh(req, res, next) {
     try {
-      const { refreshToken: staleRefreshToken } = req.cookies;
-      const { accessToken, refreshToken: freshtoken } =
-        await this.#authService.refreshTokens(staleRefreshToken);
+      const { refreshToken: staleRefreshTokens } = req.cookies;
+      const { tokens } =
+        await this.#authService.refreshTokens(staleRefreshTokens);
 
-      this.#cookieProvider.setAuthCookies(res, { refreshToken: freshtoken });
+      this.#cookieProvider.setAuthCookies(res, tokens);
 
-      res.status(HTTP_STATUS.OK).json({ accessToken });
+      res.status(HTTP_STATUS.OK).json(tokens);
     } catch (error) {
       next(error);
     }
