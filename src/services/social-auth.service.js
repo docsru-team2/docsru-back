@@ -11,6 +11,10 @@ export class SocialAuthService {
     this.#tokenProvider = tokenProvider;
   }
 
+  #random() {
+    return Math.floor(Math.random() * 99999) + 1;
+  }
+
   async loginOrSignUp({ provider, code, state }) {
     const profile = await this.#getSocialProfile(provider, code, state);
     const { user, isNewbie } = await this.#resolveUser({ provider, profile });
@@ -44,8 +48,8 @@ export class SocialAuthService {
       const newUser = await this.#userRepository.createWithSocialAccount({
         email,
         nickname: profile.name
-          ? `${profile.name}_${profile.id.slice(0, 2)}`
-          : `독수르_${profile.id.slice(0, 2)}`,
+          ? `${profile.name}_${this.#random()}`
+          : `독수르_${this.#random()}`,
         provider: provider.toUpperCase(),
         providerAccountId: profile.id,
         userType: 'USER',
