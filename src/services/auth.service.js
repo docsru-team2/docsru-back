@@ -44,13 +44,8 @@ export class AuthService {
       grade,
     });
 
-    const tokens = this.#tokenProvider.generateTokens(user);
     return {
       user,
-      tokens: {
-        accessToken: tokens.accessToken,
-        refreshToken: tokens.refreshToken,
-      },
     };
   }
 

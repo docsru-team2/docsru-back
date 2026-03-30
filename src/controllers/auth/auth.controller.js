@@ -56,13 +56,12 @@ export class AuthController extends BaseController {
   // 일반 회원가입
   async signUp(req, res) {
     const { email, password, nickname } = req.body;
-    const { user, tokens } = await this.#authService.signUp({
+    const { user } = await this.#authService.signUp({
       email,
       password,
       nickname,
     });
 
-    this.#cookieProvider.setAuthCookies(res, tokens);
     res
       .status(HTTP_STATUS.CREATED)
       .json({ success: true, data: user, message: '회원가입 성공!' });
@@ -79,7 +78,7 @@ export class AuthController extends BaseController {
     this.#cookieProvider.setAuthCookies(res, tokens);
     res
       .status(HTTP_STATUS.OK)
-      .json({ success: true, data: user, message: '회원가입 성공!' });
+      .json({ success: true, data: user, message: '로그인 성공!' });
   }
 
   //일반 로그아웃
@@ -122,7 +121,7 @@ export class AuthController extends BaseController {
       throw new BadRequestException(ERROR_CODE.SOCIAL_AUTH_CODE_REQUIRED);
     }
 
-    const { tokens } = await this.#socialAuthService.loginOrSignUp({
+    const { tokens, isNewbie } = await this.#socialAuthService.loginOrSignUp({
       provider,
       code,
       state,
@@ -131,7 +130,7 @@ export class AuthController extends BaseController {
     this.#cookieProvider.setAuthCookies(res, tokens);
 
     const { next } = this.#decodeState(state);
-    const safeNext = this.#normalizeNextPath(next);
+    const safeNext = isNewbie ? '/join/welcome' : this.#normalizeNextPath(next);
     const redirectUrl = new URL(safeNext, config.CLIENT_BASE_URL).toString();
 
     return res.redirect(redirectUrl);
