@@ -12,11 +12,10 @@ export class FeedbackService {
 
   //피드백 목록 조회
   async findAll(params) {
-    const { submissionId, page = 1, limit = 10, ...rest } = params;
+    const { submissionId, page = 1, limit = 10, orderBy } = params;
     const [list, totalCount] = await this.#feedbackRepository.findAll(
       submissionId,
-      { page: Number(page), limit: Number(limit) },
-      ...rest,
+      { page: Number(page), limit: Number(limit), orderBy },
     );
 
     return {
@@ -30,7 +29,9 @@ export class FeedbackService {
 
   //피드백 단일 조회
   async findDetail(id) {
-    return await this.findById(id);
+    const feedback = await this.#feedbackRepository.findById(id);
+    if (!feedback) throw new NotFoundException(ERROR_CODE.FEEDBACK_NOT_FOUND);
+    return feedback;
   }
 
   //피드백 생성
