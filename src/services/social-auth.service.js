@@ -33,7 +33,7 @@ export class SocialAuthService {
     }
 
     const email = this.#resolveEmail({ provider, profile });
-    const existingUser = await this.#userRepository.findByEmail(email);
+    const existingUser = await this.#userRepository.findBy({email});
 
     // 새 유저 생성(기본값 일반 유저)
     if (!existingUser) {
