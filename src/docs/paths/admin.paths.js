@@ -26,16 +26,20 @@ export const adminPaths = {
           description: '페이지당 항목 수',
         },
         {
-          name: 'sort',
+          name: 'orderBy',
           in: 'query',
-          schema: { type: 'string' },
+          schema: {
+            type: 'string',
+            enum: ['CREATED_DESC', 'CREATED_ASC', 'DEADLINE_ASC', 'DEADLINE_DESC'],
+            default: 'CREATED_DESC',
+          },
           description: '정렬 기준',
         },
         {
           name: 'keyword',
           in: 'query',
           schema: { type: 'string' },
-          description: '검색 키워드',
+          description: '제목 검색 키워드',
         },
         {
           name: 'reviewStatus',
@@ -45,6 +49,38 @@ export const adminPaths = {
             enum: ['PENDING', 'APPROVED', 'REJECTED', 'DELETED'],
           },
           description: '심사 상태 필터',
+        },
+        {
+          name: 'field',
+          in: 'query',
+          schema: {
+            type: 'array',
+            items: {
+              type: 'string',
+              enum: ['NEXT_JS', 'MODERN_JS', 'API', 'WEB', 'CAREER', 'ETC'],
+            },
+          },
+          style: 'form',
+          explode: true,
+          description: '기술 분야 필터 (복수 선택 가능)',
+        },
+        {
+          name: 'documentType',
+          in: 'query',
+          schema: {
+            type: 'string',
+            enum: ['OFFICIAL_DOC', 'BLOG', 'BOOK', 'ETC'],
+          },
+          description: '문서 유형 필터',
+        },
+        {
+          name: 'progressStatus',
+          in: 'query',
+          schema: {
+            type: 'string',
+            enum: ['OPEN', 'CLOSED'],
+          },
+          description: '진행 상태 필터',
         },
       ],
       responses: {
@@ -128,7 +164,7 @@ export const adminPaths = {
                 sourceUrl: { type: 'string', format: 'uri' },
                 field: {
                   type: 'string',
-                  enum: ['NEXT_JS', 'MODERN_JS', 'WEB', 'ETC'],
+                  enum: ['NEXT_JS', 'MODERN_JS', 'API', 'WEB', 'CAREER', 'ETC'],
                 },
                 documentType: {
                   type: 'string',
