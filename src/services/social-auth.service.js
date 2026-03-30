@@ -48,8 +48,8 @@ export class SocialAuthService {
       const newUser = await this.#userRepository.createWithSocialAccount({
         email,
         nickname: profile.name
-          ? `${profile.name}_${this.#random()}`
-          : `독수르_${this.#random()}`,
+          ? `${profile.name}${this.#random()}`
+          : `독수르${this.#random()}`,
         provider: provider.toUpperCase(),
         providerAccountId: profile.id,
         userType: 'USER',
