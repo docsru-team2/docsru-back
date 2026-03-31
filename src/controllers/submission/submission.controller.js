@@ -3,7 +3,6 @@ import { BaseController } from '#controllers/base.controller.js';
 import { needsLogin, validate, checkOwnership } from '#middlewares';
 import {
   idParamSchema,
-  // createDraftSchema,
   editSubmissionSchema,
 } from './dto/submission.dto.js';
 
