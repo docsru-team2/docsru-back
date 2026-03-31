@@ -22,17 +22,22 @@ export class NotificationRepository {
 
   //내 알림 목록 조회
   findAllByUserId(id, { cursor, limit = 10 }) {
-    const where = { userId: id, ...(cursor && { id: { lt: cursor } }) };
+    const baseWhere = { userId: id };
 
     return Promise.all([
       this.#prisma.notification.findMany({
-        where,
+        where: {
+          userId: id,
+          ...(cursor && { id: { lt: cursor } }),
+        },
         take: limit + 1,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { id: 'desc' },
         select: notificationSelect,
       }),
-      this.#prisma.notification.count({ where }), // totalCount
-      this.#prisma.notification.count({ where: { ...where, isRead: false } }), // unreadCount
+      this.#prisma.notification.count({ where: baseWhere }), // totalCount
+      this.#prisma.notification.count({
+        where: { ...baseWhere, isRead: false },
+      }), // unreadCount
     ]);
   }
 
