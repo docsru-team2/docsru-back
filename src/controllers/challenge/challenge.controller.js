@@ -16,6 +16,13 @@ export class ChallengeController extends BaseController {
   }
 
   routes() {
+    this.router.get('/me/applied', needsLogin, (req, res, next) =>
+      this.getApplied(req, res, next),
+    );
+    this.router.get('/joined', needsLogin, (req, res, next) =>
+      this.getJoined(req, res, next),
+    );
+
     this.router.get('/', (req, res, next) => this.getAll(req, res, next));
     this.router.get(
       '/:id',
@@ -27,6 +34,7 @@ export class ChallengeController extends BaseController {
       validate('body', createChallengeSchema),
       (req, res, next) => this.create(req, res, next),
     );
+
     this.router.patch(
       '/:id',
       needsLogin,
@@ -53,27 +61,21 @@ export class ChallengeController extends BaseController {
       (req, res, next) => this.join(req, res, next),
     );
 
-    this.router.get('/me/applied', needsLogin, (req, res, next) => {
-      req.query.userId = req.user.id;
-      return this.getMyList(req, res, next);
-    });
-    this.router.get('/me/ongoing', needsLogin, (req, res, next) => {
-      req.query.userId = req.user.id;
-      req.query.progressStatus = 'OPEN';
-      return this.getMyList(req, res, next);
-    });
-    this.router.get('/me/completed', needsLogin, (req, res, next) => {
-      req.query.userId = req.user.id;
-      req.query.progressStatus = 'CLOSED';
-      return this.getMyList(req, res, next);
-    });
-
     return this.router;
   }
 
   async getAll(req, res, next) {
     try {
-      const { page, limit, orderBy, keyword, reviewStatus, field, documentType, progressStatus } = req.query;
+      const {
+        page,
+        limit,
+        orderBy,
+        keyword,
+        reviewStatus,
+        field,
+        documentType,
+        progressStatus,
+      } = req.query;
 
       const result = await this.#challengeService.findAll({
         page: Number(page) || 1,
@@ -169,18 +171,33 @@ export class ChallengeController extends BaseController {
     }
   }
 
-  async getMyList(req, res, next) {
+  async getApplied(req, res, next) {
     try {
-      const { page, limit, orderBy, ...rest } = req.query;
-
-      const result = await this.#challengeService.findMyChallenges({
+      const { page, limit, orderBy, keyword, reviewStatus } = req.query;
+      const result = await this.#challengeService.findAppliedChallenges({
         page: Number(page) || 1,
         limit: Number(limit) || 10,
-        sort: orderBy,
-        userId: req.user.id,
-        ...rest,
+        orderBy,
+        keyword,
+        reviewStatus,
+        creatorId: req.user.id,
       });
+      res.status(HTTP_STATUS.OK).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
 
+  async getJoined(req, res, next) {
+    try {
+      const { page, limit, keyword, progressStatus } = req.query;
+      const result = await this.#challengeService.findJoinedChallenges({
+        page: Number(page) || 1,
+        limit: Number(limit) || 10,
+        keyword,
+        progressStatus,
+        userId: req.user.id,
+      });
       res.status(HTTP_STATUS.OK).json(result);
     } catch (error) {
       next(error);

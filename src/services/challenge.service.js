@@ -113,18 +113,40 @@ export class ChallengeService {
       },
     };
   }
-  //내가 신청한 챌린지 목록 조회
-  async findMyChallenges(params) {
-    const { page = 1, limit = 10, sort, userId, ...rest } = params;
+  // 내가 생성한 챌린지 목록 조회 (/challenges/me/applied)
+  async findAppliedChallenges(params) {
+    const { page = 1, limit = 10, orderBy: sort, creatorId, keyword, reviewStatus } = params;
     const orderBy = CHALLENGE_ORDER_BY[sort] || DEFAULT_ORDER;
+
+    const [list, totalCount] = await this.#challengeRepository.findCreatedChallenges({
+      page: Number(page),
+      limit: Number(limit),
+      orderBy,
+      creatorId,
+      keyword,
+      reviewStatus,
+    });
+
+    return {
+      list,
+      pagination: {
+        totalCount,
+        hasNext: Number(page) * Number(limit) < totalCount,
+      },
+    };
+  }
+
+  // 내가 참여한 챌린지 목록 조회 (/challenges/joined)
+  async findJoinedChallenges(params) {
+    const { page = 1, limit = 10, userId, keyword, progressStatus } = params;
 
     const [list, totalCount] = await this.#challengeRepository.findByMyList({
       page: Number(page),
       limit: Number(limit),
       userId,
-      orderBy,
-      userType: 'USER',
-      ...rest,
+      keyword,
+      progressStatus,
+      orderBy: DEFAULT_ORDER,
     });
 
     return {
