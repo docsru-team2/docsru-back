@@ -11,11 +11,15 @@ export class SocialAuthService {
     this.#tokenProvider = tokenProvider;
   }
 
+  #random() {
+    return Math.floor(Math.random() * 999) + 1;
+  }
+
   async loginOrSignUp({ provider, code, state }) {
     const profile = await this.#getSocialProfile(provider, code, state);
-    const user = await this.#resolveUser({ provider, profile });
+    const { user, isNewbie } = await this.#resolveUser({ provider, profile });
     const tokens = this.#tokenProvider.generateTokens(user);
-    return { user, tokens };
+    return { user, tokens, isNewbie };
   }
 
   async #resolveUser({ provider, profile }) {
@@ -27,32 +31,36 @@ export class SocialAuthService {
 
     // 닉네임이 없으면 업데이트
     if (socialUser) {
-      return !socialUser.nickname && profile.name
-        ? this.#userRepository.update(socialUser.id, { nickname: profile.name })
-        : socialUser;
+      const user =
+        !socialUser.nickname && profile.name
+          ? await this.#userRepository.update(socialUser.id, {
+              nickname: profile.name,
+            })
+          : socialUser;
+      return { user, isNewbie: false };
     }
 
     const email = this.#resolveEmail({ provider, profile });
-    const existingUser = await this.#userRepository.findByEmail(email);
+    const existingUser = await this.#userRepository.findBy({ email });
 
     // 새 유저 생성(기본값 일반 유저)
     if (!existingUser) {
-      return this.#userRepository.createWithSocialAccount({
+      const newUser = await this.#userRepository.createWithSocialAccount({
         email,
-        nickname: profile.name || `독수르_${profile.id.slice(0, 5)}`, // 닉네임 없으면 임의로 만들어넣기
+        nickname: `G${this.#random()}`,
         provider: provider.toUpperCase(),
         providerAccountId: profile.id,
         userType: 'USER',
         grade: 'NORMAL',
       });
+      return { user: newUser, isNewbie: true };
     }
-
     // 기존 유저에 소셜 계정 연결
     await this.#userRepository.update(existingUser.id, {
       providerAccountId: profile.id,
     });
 
-    return existingUser;
+    return { user: existingUser, isNewbie: false };
   }
 
   async #getSocialProfile(provider, code /*state*/) {

@@ -17,7 +17,7 @@ export class UserService {
   }
 
   async getUserDetail(id) {
-    const user = await this.#userRepository.findById(id);
+    const user = await this.#userRepository.findBy(id);
     if (!user) {
       throw new NotFoundException(ERROR_CODE.USER_NOT_FOUND);
     }

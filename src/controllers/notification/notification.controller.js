@@ -14,6 +14,7 @@ export class NotificationController extends BaseController {
   routes() {
     this.router.get('/stream', (req, res) => this.stream(req, res));
     this.router.get('/', (req, res) => this.getAll(req, res));
+    this.router.post('/', (req, res) => this.create(req, res));
     this.router.patch('/read-all', (req, res) => this.markAllAsRead(req, res));
     this.router.delete('/all', (req, res) => this.deleteAll(req, res));
     this.router.get('/:id', validate('params', idParamSchema), (req, res) =>
@@ -82,5 +83,19 @@ export class NotificationController extends BaseController {
     const { id: userId } = req.user;
     await this.#notificationService.deleteAll(userId);
     res.status(HTTP_STATUS.NO_CONTENT).send();
+  }
+
+  // 알림 생성 (테스트용)
+  async create(req, res) {
+    const result = await this.#notificationService.notify(
+      '01KMZC15VCYBVWMM59H05JW9D7', //받는 유저
+      {
+        actorUserId: '01KMZC15TM2HN6SJ170A6B9N4T', //어드민
+        type: 'CHALLENGE_ADMIN_APPROVED',
+        content: '테스트 알림10',
+        targetId: '01KMPRWTM8F5YT0NR8ZS5Y2BN4',
+      },
+    );
+    res.status(HTTP_STATUS.OK).json(result);
   }
 }
