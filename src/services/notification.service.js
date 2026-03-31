@@ -41,7 +41,7 @@ export class NotificationService {
 
     const [notifications, totalCount, unreadCount] =
       await this.#notificationRepository.findAllByUserId(userId, {
-        cursor: cursor ? Number(cursor) : undefined,
+        cursor: cursor || undefined,
         limit: parsedLimit,
       });
 
@@ -51,7 +51,7 @@ export class NotificationService {
     const nextCursor =
       notifications.length > 0 ? notifications.at(-1).id : null;
 
-    return { notifications, nextCursor, totalCount, unreadCount };
+    return { notifications, nextCursor, totalCount, unreadCount, hasMore };
   }
 
   async getNotification(id) {
@@ -88,7 +88,6 @@ export class NotificationService {
   }
 
   async deleteAll(userId) {
-
     return await this.#notificationRepository.deleteAll(userId);
   }
 }
