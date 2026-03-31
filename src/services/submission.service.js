@@ -1,9 +1,5 @@
 import { ERROR_CODE } from '#constants';
-import {
-  ConflictException,
-  ForbiddenException,
-  NotFoundException,
-} from '#exceptions';
+import { ConflictException, NotFoundException } from '#exceptions';
 
 export class SubmissionService {
   #submissionRepository;

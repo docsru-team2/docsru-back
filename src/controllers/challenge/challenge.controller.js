@@ -5,28 +5,30 @@ import {
   editChallengeSchema,
   idParamSchema,
   createSubmissionSchema,
-  createDraftSchema,
-  editDraftSchema,
+  challengeIdParamSchema,
 } from './dto/challenge.dto.js';
+import { createDraftSchema, editDraftSchema } from './dto/draft.dto.js';
 import { needsLogin, validate, checkOwnership } from '#middlewares';
 
 export class ChallengeController extends BaseController {
   #challengeService;
   #submissionService;
+  #draftService;
 
   #reqData(req) {
     return {
       ...{ id: req.params.id },
-      ...{ submissionId: req.submission.id },
+      ...{ challengeId: req.params.challengeId },
       ...{ userId: req.user?.id },
       ...{ data: req.body },
     };
   }
 
-  constructor({ challengeService, submissionService }) {
+  constructor({ challengeService, submissionService, draftService }) {
     super();
     this.#challengeService = challengeService;
     this.#submissionService = submissionService;
+    this.#draftService = draftService;
   }
 
   routes() {
@@ -38,6 +40,7 @@ export class ChallengeController extends BaseController {
     );
     this.router.post(
       '/',
+      needsLogin,
       validate('body', createChallengeSchema),
       (req, res, next) => this.create(req, res, next),
     );
@@ -63,43 +66,62 @@ export class ChallengeController extends BaseController {
     );
     this.router.post(
       '/:id/participants',
+      needsLogin,
       validate('params', idParamSchema),
       (req, res, next) => this.join(req, res, next),
     );
 
-    this.router.get('/me/applied', needsLogin, (req, res, next) => {
-      req.query.userId = req.user.id;
-      return this.getMyList(req, res, next);
-    });
-    this.router.get('/me/ongoing', needsLogin, (req, res, next) => {
-      req.query.userId = req.user.id;
-      req.query.progressStatus = 'OPEN';
-      return this.getMyList(req, res, next);
-    });
-    this.router.get('/me/completed', needsLogin, (req, res, next) => {
-      req.query.userId = req.user.id;
-      req.query.progressStatus = 'CLOSED';
-      return this.getMyList(req, res, next);
-    });
+    // 임시저장
+    this.router.get('/:challengeId/drafts', needsLogin, (req, res, next) =>
+      this.getAllDraft(req, res, next),
+    );
+    this.router.get(
+      '/:challengeId/draft/:draftId',
+      needsLogin,
+      validate('params', challengeIdParamSchema),
+      (req, res, next) => this.getOneDraft(req, res, next),
+    );
+    this.router.post(
+      '/:challengeId/draft',
+      needsLogin,
+      validate('body', createDraftSchema),
+      (req, res, next) => this.createDraft(req, res, next),
+    );
+
+    this.router.patch(
+      '/:challengeId/draft/:draftId',
+      needsLogin,
+      validate('body', editDraftSchema),
+      (req, res, next) => this.updateDraft(req, res, next),
+    );
+
+    this.router.delete(
+      '/:challengeId/draft/:draftId',
+      needsLogin,
+      (req, res, next) => this.deleteDraft(req, res, next),
+    );
 
     //작업물
-    //작업물 목록 조회
-    this.router.get(
-      '/:challengeId/submissions',
-      validate('params', idParamSchema),
-      (req, res, next) => this.getAllSubmissions(req, res, next),
-    );
     //베스트 작업물 목록 조회
     this.router.get(
       '/:challengeId/submissions/best',
-      validate('params', idParamSchema),
+      needsLogin,
+      validate('params', challengeIdParamSchema),
       (req, res, next) => this.getBestList(req, res, next),
+    );
+    //작업물 목록 조회
+    this.router.get(
+      '/:challengeId/submissions',
+      needsLogin,
+      validate('params', challengeIdParamSchema),
+      (req, res, next) => this.getAllSubmissions(req, res, next),
     );
     //작업물 생성
     this.router.post(
       '/:challengeId/submissions',
+      needsLogin,
       validate('body', createSubmissionSchema),
-      (req, res, next) => this.create(req, res, next),
+      (req, res, next) => this.createSubmission(req, res, next),
     );
     return this.router;
   }
@@ -263,62 +285,9 @@ export class ChallengeController extends BaseController {
       next(error);
     }
   }
-}
-export class DraftController extends BaseController {
-  #draftService;
-
-  #reqData(req) {
-    return {
-      id: req.params.id,
-      userId: req.user?.id,
-      data: req.body,
-    };
-  }
-
-  constructor({ draftService }) {
-    super();
-    this.#draftService = draftService;
-  }
-
-  routes() {
-    // 임시저장 목록 조회
-    this.router.get('/', needsLogin, (req, res, next) =>
-      this.getAll(req, res, next),
-    );
-    // 임시저장 상세 조회
-    this.router.get(
-      '/:id',
-      needsLogin,
-      validate('params', idParamSchema),
-      (req, res, next) => this.getOne(req, res, next),
-    );
-    // 임시저장 생성
-    this.router.post(
-      '/',
-      needsLogin,
-      validate('body', createDraftSchema),
-      (req, res, next) => this.create(req, res, next),
-    );
-    // 임시저장 수정
-    this.router.patch(
-      '/:id',
-      needsLogin,
-      validate('params', idParamSchema, 'body', editDraftSchema),
-      (req, res, next) => this.update(req, res, next),
-    );
-    // 임시저장 삭제
-    this.router.delete(
-      '/:id',
-      needsLogin,
-      validate('params', idParamSchema),
-      (req, res, next) => this.delete(req, res, next),
-    );
-
-    return this.router;
-  }
 
   // 임시저장 목록 조회
-  async getAll(req, res, next) {
+  async getAllDraft(req, res, next) {
     try {
       const { page, limit } = req.query;
       const userId = req.user.id;
@@ -336,7 +305,7 @@ export class DraftController extends BaseController {
   }
 
   // 임시저장 상세 조회
-  async getOne(req, res, next) {
+  async getOneDraft(req, res, next) {
     try {
       const { id } = req.params;
       const draft = await this.#draftService.findDetail(id);
@@ -347,7 +316,7 @@ export class DraftController extends BaseController {
   }
 
   // 임시저장 생성
-  async create(req, res, next) {
+  async createDraft(req, res, next) {
     try {
       const { userId, data } = this.#reqData(req);
       const challengeId = req.params.challengeId;
@@ -367,10 +336,15 @@ export class DraftController extends BaseController {
   }
 
   // 임시저장 수정
-  async update(req, res, next) {
+  async updateDraft(req, res, next) {
     try {
-      const { id, userId, data } = this.#reqData(req);
-      const updatedDraft = await this.#draftService.update(id, userId, data);
+      const draftId = req.params.draftId;
+      const { userId, data } = this.#reqData(req);
+      const updatedDraft = await this.#draftService.update(
+        draftId,
+        userId,
+        data,
+      );
       res.status(HTTP_STATUS.OK).json({
         success: true,
         message: '임시저장이 수정되었습니다.',
@@ -382,10 +356,11 @@ export class DraftController extends BaseController {
   }
 
   // 임시저장 삭제
-  async delete(req, res, next) {
+  async deleteDraft(req, res, next) {
     try {
-      const { id, userId } = this.#reqData(req);
-      const deletedDraft = await this.#draftService.delete(id, userId);
+      const draftId = req.params.draftId;
+      const { userId } = this.#reqData(req);
+      const deletedDraft = await this.#draftService.delete(draftId, userId);
       res.status(HTTP_STATUS.OK).json({
         success: true,
         message: '임시저장이 삭제되었습니다.',
