@@ -22,6 +22,9 @@ import {
   UserService,
   ChallengeService,
   SubmissionService,
+  SubmissionLikeService,
+  DraftService,
+  FeedbackService,
   NotificationService,
   AdminService,
 } from '#services';
@@ -30,6 +33,7 @@ import {
   UserController,
   ChallengeController,
   SubmissionController,
+  FeedbackController,
   NotificationController,
   Controller,
   AdminController,
@@ -86,6 +90,13 @@ export const createContainer = () => {
     submissionService: asClass(SubmissionService, {
       lifetime: Lifetime.SINGLETON,
     }),
+    draftService: asClass(DraftService, { lifetime: Lifetime.SINGLETON }),
+    submissionLikeService: asClass(SubmissionLikeService, {
+      lifetime: Lifetime.SINGLETON,
+    }),
+    feedbackService: asClass(FeedbackService, {
+      lifetime: Lifetime.SINGLETON,
+    }),
     notificationService: asClass(NotificationService, {
       lifetime: Lifetime.SINGLETON,
     }),
@@ -103,6 +114,9 @@ export const createContainer = () => {
       lifetime: Lifetime.SINGLETON,
     }),
     submissionController: asClass(SubmissionController, {
+      lifetime: Lifetime.SINGLETON,
+    }),
+    feedbackController: asClass(FeedbackController, {
       lifetime: Lifetime.SINGLETON,
     }),
     notificationController: asClass(NotificationController, {

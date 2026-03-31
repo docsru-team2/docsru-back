@@ -7,6 +7,12 @@ export const idParamSchema = z.object({
   }),
 });
 
+export const challengeIdParamSchema = z.object({
+  challengeId: z.ulid({
+    message: '데이터 식별 오류',
+  }),
+});
+
 // 챌린지 생성 스키마
 export const createChallengeSchema = z.object({
   title: z.string(),
@@ -26,4 +32,10 @@ export const editChallengeSchema = z.object({
   description: z.string().optional(),
   deadline: z.date().optional(),
   maxParticipants: z.number().optional(),
+});
+
+// 제출물 생성 스키마
+export const createSubmissionSchema = z.object({
+  title: z.string(),
+  content: z.string(),
 });

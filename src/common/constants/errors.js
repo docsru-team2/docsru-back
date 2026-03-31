@@ -67,6 +67,11 @@ export const ERROR_CODE = {
     code: 'AUTH_FORBIDDEN',
     message: '권한 없음',
   },
+  CANNOT_LIKE_MINE: {
+    status: HTTP_STATUS.FORBIDDEN,
+    code: 'CANNOT_LIKE_MINE',
+    message: '본인 작업물은 추천할 수 없습니다.',
+  },
 
   // 404 Not Found
   COMMON_NOT_FOUND: {

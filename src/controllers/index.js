@@ -8,6 +8,7 @@ export * from './challenge/index.js';
 export * from './submission/index.js';
 export * from './notification/index.js';
 export * from './admin/index.js';
+export * from './feedback/index.js';
 
 export class Controller extends BaseController {
   #authController;
@@ -16,6 +17,7 @@ export class Controller extends BaseController {
   #challengeController;
   #submissionController;
   #notificationController;
+  #feedbackController;
 
   constructor({
     authController,
@@ -24,6 +26,7 @@ export class Controller extends BaseController {
     adminController,
     submissionController,
     notificationController,
+    feedbackController,
   }) {
     super();
     this.#authController = authController;
@@ -32,6 +35,7 @@ export class Controller extends BaseController {
     this.#submissionController = submissionController;
     this.#notificationController = notificationController;
     this.#adminController = adminController;
+    this.#feedbackController = feedbackController;
   }
 
   routes() {
@@ -51,7 +55,7 @@ export class Controller extends BaseController {
     this.router.use(
       '/feedbacks',
       needsLogin,
-      this.#submissionController.routes(),
+      this.#feedbackController.routes(),
     );
     this.router.use(
       '/notifications',

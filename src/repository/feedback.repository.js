@@ -1,23 +1,3 @@
-const feedbackSelect = {
-  id: true,
-  content: true,
-  createdAt: true,
-  updatedAt: true,
-  user: {
-    select: {
-      id: true,
-      nickname: true,
-    },
-  },
-};
-
-const feedbackCreateSelect = {
-  id: true,
-  submissionId: true,
-  content: true,
-  createdAt: true,
-};
-
 export class FeedbackRepository {
   #prisma;
 
@@ -25,8 +5,26 @@ export class FeedbackRepository {
     this.#prisma = prisma;
   }
 
-  // 피드백 조회
-  findAll(id, { page = 1, limit = 10 }) {
+  get #feedbackSelect() {
+    return {
+      id: true,
+      submissionId: true,
+      userId: true,
+      content: true,
+      createdAt: true,
+      updatedAt: true,
+      user: {
+        select: {
+          id: true,
+          nickname: true,
+          grade: true,
+        },
+      },
+    };
+  }
+
+  //피드백 목록 조회
+  findAll(id, { page = 1, limit = 3, orderBy } = {}) {
     const skip = (page - 1) * limit;
     const where = { submissionId: id };
 
@@ -35,53 +33,43 @@ export class FeedbackRepository {
         where,
         skip,
         take: limit,
-        select: feedbackSelect,
+        select: this.#feedbackSelect,
+        orderBy: orderBy ? { [orderBy]: 'desc' } : { createdAt: 'desc' },
       }),
       this.#prisma.feedback.count({ where }),
     ]);
   }
 
-  // 피드백 조회
+  // 피드백 상세 조회
   findById(id) {
     return this.#prisma.feedback.findUnique({
-      where: {
-        id: id,
-      },
-      select: feedbackSelect,
+      where: { id },
+      select: this.#feedbackSelect,
     });
   }
 
   // 피드백 생성
-  create(submissionId, data) {
+  make(submissionId, data) {
     return this.#prisma.feedback.create({
-      data: { ...data, submissionId },
-      select: feedbackCreateSelect,
+      data: { submissionId, ...data },
+      select: this.#feedbackSelect,
     });
   }
 
   // 피드백 수정
-  update(id, data) {
+  edit(id, data) {
     return this.#prisma.feedback.update({
-      where: {
-        id,
-      },
+      where: { id },
       data,
-      select: {
-        ...feedbackCreateSelect,
-        updatedAt: true,
-      },
+      select: this.#feedbackSelect,
     });
   }
 
   // 피드백 삭제
   delete(id) {
     return this.#prisma.feedback.delete({
-      where: {
-        id,
-      },
-      select: {
-        id: true,
-      },
+      where: { id },
+      select: { id: true },
     });
   }
 }
