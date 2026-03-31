@@ -9,6 +9,14 @@ const TESTER_PASSWORD = 'test1!';
 const FIELDS = ['NEXT_JS', 'MODERN_JS', 'API', 'WEB', 'CAREER'];
 const DOCUMENT_TYPES = ['OFFICIAL_DOC', 'BLOG', 'BOOK', 'ETC'];
 
+const DAY = 1000 * 60 * 60 * 24;
+// 미래 마감일: 1~90일 뒤 랜덤
+const futureDeadline = () => new Date(Date.now() + DAY * (Math.floor(Math.random() * 90) + 1));
+// 과거 마감일: 1~180일 전 랜덤
+const pastDeadline = () => new Date(Date.now() - DAY * (Math.floor(Math.random() * 180) + 1));
+// 과거 신청일: 1~365일 전 랜덤
+const pastCreatedAt = () => new Date(Date.now() - DAY * (Math.floor(Math.random() * 365) + 1));
+
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
@@ -53,7 +61,8 @@ async function run() {
         field: FIELDS[i % FIELDS.length],
         documentType: DOCUMENT_TYPES[i % DOCUMENT_TYPES.length],
         description: `tester 테스트용 OPEN 챌린지입니다. (${i + 1})`,
-        deadline: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+        deadline: futureDeadline(),
+        createdAt: pastCreatedAt(),
         maxParticipants: 20,
         reviewStatus: 'APPROVED',
         progressStatus: 'OPEN',
@@ -76,7 +85,8 @@ async function run() {
         field: FIELDS[i % FIELDS.length],
         documentType: DOCUMENT_TYPES[i % DOCUMENT_TYPES.length],
         description: `tester 테스트용 CLOSED 챌린지입니다. (${i + 1})`,
-        deadline: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7),
+        deadline: pastDeadline(),
+        createdAt: pastCreatedAt(),
         maxParticipants: 20,
         reviewStatus: 'APPROVED',
         progressStatus: 'CLOSED',
@@ -106,7 +116,8 @@ async function run() {
         field: FIELDS[i % FIELDS.length],
         documentType: DOCUMENT_TYPES[i % DOCUMENT_TYPES.length],
         description: `tester가 신청하고 승인된 챌린지입니다. (${i + 1})`,
-        deadline: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+        deadline: futureDeadline(),
+        createdAt: pastCreatedAt(),
         maxParticipants: 20,
         reviewStatus: 'APPROVED',
         progressStatus: 'OPEN',
@@ -125,7 +136,8 @@ async function run() {
         field: FIELDS[i % FIELDS.length],
         documentType: DOCUMENT_TYPES[i % DOCUMENT_TYPES.length],
         description: `tester가 신청했다가 삭제된 챌린지입니다. (${i + 1})`,
-        deadline: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+        deadline: futureDeadline(),
+        createdAt: pastCreatedAt(),
         maxParticipants: 20,
         reviewStatus: 'DELETED',
         deleteReason: '테스트용 삭제 사유입니다.',
@@ -144,7 +156,8 @@ async function run() {
         field: FIELDS[i % FIELDS.length],
         documentType: DOCUMENT_TYPES[i % DOCUMENT_TYPES.length],
         description: `tester 테스트용 PENDING 챌린지입니다. (${i + 1})`,
-        deadline: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+        deadline: futureDeadline(),
+        createdAt: pastCreatedAt(),
         maxParticipants: 20,
         reviewStatus: 'PENDING',
         creatorId: tester.id,
@@ -165,7 +178,8 @@ async function run() {
         field: FIELDS[i % FIELDS.length],
         documentType: DOCUMENT_TYPES[i % DOCUMENT_TYPES.length],
         description: `tester 테스트용 REJECTED 챌린지입니다. (${i + 1})`,
-        deadline: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+        deadline: futureDeadline(),
+        createdAt: pastCreatedAt(),
         maxParticipants: 20,
         reviewStatus: 'REJECTED',
         rejectReason: '테스트용 거절 사유입니다.',
@@ -187,7 +201,8 @@ async function run() {
         field: FIELDS[i % FIELDS.length],
         documentType: DOCUMENT_TYPES[i % DOCUMENT_TYPES.length],
         description: `tester 테스트용 DELETED 챌린지입니다. (${i + 1})`,
-        deadline: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+        deadline: futureDeadline(),
+        createdAt: pastCreatedAt(),
         maxParticipants: 20,
         reviewStatus: 'DELETED',
         deleteReason: '테스트용 삭제 사유입니다.',
