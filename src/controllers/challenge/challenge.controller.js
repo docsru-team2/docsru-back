@@ -83,7 +83,7 @@ export class ChallengeController extends BaseController {
     //작업물
     //작업물 목록 조회
     this.router.get(
-      '/:challengeId',
+      '/:challengeId/submissions',
       validate('params', idParamSchema),
       (req, res, next) => this.getAllSubmissions(req, res, next),
     );
@@ -95,7 +95,7 @@ export class ChallengeController extends BaseController {
     );
     //작업물 생성
     this.router.post(
-      '/',
+      '/:challengeId/submissions',
       validate('body', createSubmissionSchema),
       (req, res, next) => this.create(req, res, next),
     );
@@ -239,6 +239,24 @@ export class ChallengeController extends BaseController {
       const { challengeId } = this.#reqData(req);
       const result = await this.#submissionService.findBestList(challengeId);
       res.status(HTTP_STATUS.OK).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  //작업물 생성
+  async createSubmission(req, res, next) {
+    try {
+      const { challengeId, userId, data } = this.#reqData(req);
+      const newSubmission = await this.#submissionService.create(
+        challengeId,
+        userId,
+        data,
+      );
+      res.status(HTTP_STATUS.OK).json({
+        ...{ success: true, message: '작업물이 생성되었습니다.' },
+        data: newSubmission,
+      });
     } catch (error) {
       next(error);
     }

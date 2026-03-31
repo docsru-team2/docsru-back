@@ -15,7 +15,6 @@ export class SubmissionController extends BaseController {
   #reqData(req) {
     return {
       ...{ id: req.params.id },
-      ...{ submissionId: req.submission.id },
       ...{ userId: req.user?.id },
       ...{ data: req.body },
     };
@@ -42,7 +41,7 @@ export class SubmissionController extends BaseController {
       needsLogin,
       validate('params', idParamSchema, 'body', editSubmissionSchema),
       checkOwnership(this.#submissionService, 'creatorId'),
-      (req, res, next) => this.update(req, res, next),
+      (req, res, next) => this.editSubmission(req, res, next),
     );
     //작업물 삭제
     this.router.delete(
@@ -50,7 +49,7 @@ export class SubmissionController extends BaseController {
       needsLogin,
       validate('params', idParamSchema),
       checkOwnership(this.#submissionService, 'creatorId'),
-      (req, res, next) => this.delete(req, res, next),
+      (req, res, next) => this.deleteSubmission(req, res, next),
     );
 
     //피드백
@@ -90,8 +89,8 @@ export class SubmissionController extends BaseController {
   //작업물 상세 조회
   async getDetailSubmission(req, res, next) {
     try {
-      const { submissionId } = this.#reqData(req);
-      const submission = await this.#submissionService.findDetail(submissionId);
+      const id = req.params.id;
+      const submission = await this.#submissionService.findDetail(id);
       res
         .status(HTTP_STATUS.OK)
         .json({ ...{ success: true }, data: submission });
@@ -100,33 +99,13 @@ export class SubmissionController extends BaseController {
     }
   }
 
-  //작업물 생성
-  async createSubmission(req, res, next) {
-    try {
-      const { challengeId, userId, data } = this.#reqData(req);
-      const newSubmission = await this.#submissionService.create(
-        challengeId,
-        userId,
-        data,
-      );
-      res.status(HTTP_STATUS.OK).json({
-        ...{ success: true, message: '작업물이 생성되었습니다.' },
-        data: newSubmission,
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
   //작업물 수정
   async editSubmission(req, res, next) {
     try {
-      const { submissionId, data } = this.#reqData(req);
-      const updatedSubmission = await this.#submissionService.update(
-        submissionId,
-        data,
-      );
+      const { id, data } = this.#reqData(req);
+      const updatedSubmission = await this.#submissionService.update(id, data);
       res.status(HTTP_STATUS.OK).json({
-        ...{ success: true, message: '작업물이 수정되었습니다.' },
+        ...{ success: true, message: '작업물을 수정했습니다.' },
         data: updatedSubmission,
       });
     } catch (error) {
@@ -136,15 +115,12 @@ export class SubmissionController extends BaseController {
   //작업물 삭제처리(소프트)
   async deleteSubmission(req, res, next) {
     try {
-      const { submissionId } = this.#reqData(req);
-      const deletedSubmission =
-        await this.#submissionService.delete(submissionId);
-      res
-        .status(HTTP_STATUS.OK)
-        .json({
-          ...{ success: true, message: '작업물이 삭제되었습니다.' },
-          data: deletedSubmission,
-        });
+      const { id } = this.#reqData(req);
+      const deletedSubmission = await this.#submissionService.delete(id);
+      res.status(HTTP_STATUS.OK).json({
+        ...{ success: true, message: '작업물을 삭제했습니다.' },
+        data: deletedSubmission,
+      });
     } catch (error) {
       next(error);
     }
@@ -154,7 +130,7 @@ export class SubmissionController extends BaseController {
   //피드백 전체 조회
   async getAllFeedback(req, res, next) {
     try {
-      const { submissionId } = this.#reqData(req);
+      const submissionId = req.params.submissionId;
       const { page, limit, orderBy } = req.query;
 
       const result = await this.#feedbackService.findAll({
@@ -173,7 +149,8 @@ export class SubmissionController extends BaseController {
   //피드백 생성
   async createFeedback(req, res, next) {
     try {
-      const { submissionId, userId, data } = this.#reqData(req);
+      const submissionId = req.params.submissionId;
+      const { userId, data } = this.#reqData(req);
       const feedback = await this.#feedbackService.make(
         submissionId,
         userId,
@@ -193,7 +170,7 @@ export class SubmissionController extends BaseController {
   //작업물 좋아요
   async like(req, res, next) {
     try {
-      const { id: submissionId } = req.params;
+      const { submissionId } = req.params;
       const userId = req.user.id;
       const result = await this.#submissionLikeService.like(
         submissionId,
@@ -212,7 +189,7 @@ export class SubmissionController extends BaseController {
   //작업물 좋아요 취소
   async cancel(req, res, next) {
     try {
-      const { id: submissionId } = req.params;
+      const { submissionId } = req.params;
       const userId = req.user.id;
       const result = await this.#submissionLikeService.cancel(
         submissionId,
