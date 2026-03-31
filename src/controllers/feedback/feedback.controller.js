@@ -34,6 +34,17 @@ export class FeedbackController extends BaseController {
     return this.router;
   }
 
+  //   //피드백 단일 조회
+  // async getOne(req, res, next) {
+  //   try {
+  //     const { id } = req.params;
+  //     const feedback = await this.#feedbackService.findDetail(id);
+  //     res.status(HTTP_STATUS.OK).json(feedback);
+  //   } catch (error) {
+  //     next(error);
+  //   }
+  // }
+
   async update(req, res, next) {
     try {
       const { id, userId, data } = this.#reqData(req);
