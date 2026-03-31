@@ -62,7 +62,7 @@ export class ChallengeService {
   }
 
   // 챌린지 삭제
-  async delete(id, userId) {
+  async delete(id, _userId) {
     return this.#challengeRepository.delete(id);
   }
 

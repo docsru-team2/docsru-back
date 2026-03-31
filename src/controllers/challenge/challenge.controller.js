@@ -5,6 +5,8 @@ import {
   editChallengeSchema,
   idParamSchema,
   createSubmissionSchema,
+  createDraftSchema,
+  editDraftSchema,
 } from './dto/challenge.dto.js';
 import { needsLogin, validate, checkOwnership } from '#middlewares';
 
@@ -256,6 +258,138 @@ export class ChallengeController extends BaseController {
       res.status(HTTP_STATUS.OK).json({
         ...{ success: true, message: '작업물이 생성되었습니다.' },
         data: newSubmission,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+}
+export class DraftController extends BaseController {
+  #draftService;
+
+  #reqData(req) {
+    return {
+      id: req.params.id,
+      userId: req.user?.id,
+      data: req.body,
+    };
+  }
+
+  constructor({ draftService }) {
+    super();
+    this.#draftService = draftService;
+  }
+
+  routes() {
+    // 임시저장 목록 조회
+    this.router.get('/', needsLogin, (req, res, next) =>
+      this.getAll(req, res, next),
+    );
+    // 임시저장 상세 조회
+    this.router.get(
+      '/:id',
+      needsLogin,
+      validate('params', idParamSchema),
+      (req, res, next) => this.getOne(req, res, next),
+    );
+    // 임시저장 생성
+    this.router.post(
+      '/',
+      needsLogin,
+      validate('body', createDraftSchema),
+      (req, res, next) => this.create(req, res, next),
+    );
+    // 임시저장 수정
+    this.router.patch(
+      '/:id',
+      needsLogin,
+      validate('params', idParamSchema, 'body', editDraftSchema),
+      (req, res, next) => this.update(req, res, next),
+    );
+    // 임시저장 삭제
+    this.router.delete(
+      '/:id',
+      needsLogin,
+      validate('params', idParamSchema),
+      (req, res, next) => this.delete(req, res, next),
+    );
+
+    return this.router;
+  }
+
+  // 임시저장 목록 조회
+  async getAll(req, res, next) {
+    try {
+      const { page, limit } = req.query;
+      const userId = req.user.id;
+
+      const result = await this.#draftService.findAll({
+        userId,
+        page: Number(page) || 1,
+        limit: Number(limit) || 10,
+      });
+
+      res.status(HTTP_STATUS.OK).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // 임시저장 상세 조회
+  async getOne(req, res, next) {
+    try {
+      const { id } = req.params;
+      const draft = await this.#draftService.findDetail(id);
+      res.status(HTTP_STATUS.OK).json({ success: true, data: draft });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // 임시저장 생성
+  async create(req, res, next) {
+    try {
+      const { userId, data } = this.#reqData(req);
+      const challengeId = req.params.challengeId;
+      const newDraft = await this.#draftService.create(
+        challengeId,
+        userId,
+        data,
+      );
+      res.status(HTTP_STATUS.CREATED).json({
+        success: true,
+        message: '임시저장이 생성되었습니다.',
+        data: newDraft,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // 임시저장 수정
+  async update(req, res, next) {
+    try {
+      const { id, userId, data } = this.#reqData(req);
+      const updatedDraft = await this.#draftService.update(id, userId, data);
+      res.status(HTTP_STATUS.OK).json({
+        success: true,
+        message: '임시저장이 수정되었습니다.',
+        data: updatedDraft,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // 임시저장 삭제
+  async delete(req, res, next) {
+    try {
+      const { id, userId } = this.#reqData(req);
+      const deletedDraft = await this.#draftService.delete(id, userId);
+      res.status(HTTP_STATUS.OK).json({
+        success: true,
+        message: '임시저장이 삭제되었습니다.',
+        data: deletedDraft,
       });
     } catch (error) {
       next(error);
