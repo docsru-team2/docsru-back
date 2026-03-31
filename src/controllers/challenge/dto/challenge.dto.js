@@ -27,3 +27,9 @@ export const editChallengeSchema = z.object({
   deadline: z.date().optional(),
   maxParticipants: z.number().optional(),
 });
+
+// 제출물 생성 스키마
+export const createSubmissionSchema = z.object({
+  title: z.string(),
+  content: z.string(),
+});

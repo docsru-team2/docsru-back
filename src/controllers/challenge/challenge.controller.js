@@ -4,142 +4,29 @@ import {
   createChallengeSchema,
   editChallengeSchema,
   idParamSchema,
+  createSubmissionSchema,
 } from './dto/challenge.dto.js';
 import { needsLogin, validate, checkOwnership } from '#middlewares';
 
 export class ChallengeController extends BaseController {
   #challengeService;
+  #submissionService;
 
-  constructor({ challengeService }) {
-    super();
-    this.#challengeService = challengeService;
+  #reqData(req) {
+    return {
+      ...{ id: req.params.id },
+      ...{ submissionId: req.submission.id },
+      ...{ userId: req.user?.id },
+      ...{ data: req.body },
+    };
   }
 
+  constructor({ challengeService, submissionService }) {
+    super();
+    this.#challengeService = challengeService;
+    this.#submissionService = submissionService;
+  }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
   routes() {
     this.router.get('/', (req, res, next) => this.getAll(req, res, next));
     this.router.get(
@@ -193,6 +80,25 @@ export class ChallengeController extends BaseController {
       return this.getMyList(req, res, next);
     });
 
+    //작업물
+    //작업물 목록 조회
+    this.router.get(
+      '/:challengeId',
+      validate('params', idParamSchema),
+      (req, res, next) => this.getAllSubmissions(req, res, next),
+    );
+    //베스트 작업물 목록 조회
+    this.router.get(
+      '/:challengeId/submissions/best',
+      validate('params', idParamSchema),
+      (req, res, next) => this.getBestList(req, res, next),
+    );
+    //작업물 생성
+    this.router.post(
+      '/',
+      validate('body', createSubmissionSchema),
+      (req, res, next) => this.create(req, res, next),
+    );
     return this.router;
   }
 
@@ -303,6 +209,35 @@ export class ChallengeController extends BaseController {
         ...rest,
       });
 
+      res.status(HTTP_STATUS.OK).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+  //작업물 전체 조회
+  async getAllSubmissions(req, res, next) {
+    try {
+      const { challengeId } = this.#reqData(req);
+      const { page, limit, orderBy } = req.query;
+
+      const result = await this.#submissionService.findAll({
+        challengeId,
+        page: Number(page) || 1,
+        limit: Number(limit) || 5,
+        orderBy,
+      });
+
+      res.status(HTTP_STATUS.OK).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  //베스트 작업물 목록 조회
+  async getBestList(req, res, next) {
+    try {
+      const { challengeId } = this.#reqData(req);
+      const result = await this.#submissionService.findBestList(challengeId);
       res.status(HTTP_STATUS.OK).json(result);
     } catch (error) {
       next(error);

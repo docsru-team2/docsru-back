@@ -7,7 +7,7 @@ export class SubmissionRepository {
       ...(isAdmin ? {} : { isDeleted: false }),
     };
   }
-  
+
   constructor({ prisma }) {
     this.#prisma = prisma;
   }
@@ -36,7 +36,7 @@ export class SubmissionRepository {
   }
 
   //챌린지별 작업물 목록 조회
-  async findAll(id, { page = 1, limit = 10, isAdmin = false } = {}) {
+  async findAll(id, { page = 1, limit = 10, isAdmin = false, orderBy } = {}) {
     const skip = (page - 1) * limit;
     const where = this.#whereCase({ challengeId: id }, { isAdmin });
 
@@ -45,11 +45,9 @@ export class SubmissionRepository {
         where,
         skip,
         take: limit,
-        orderBy: {
-          likes: {
-            _count: 'desc',
-          },
-        },
+        orderBy: orderBy
+          ? { [orderBy]: 'desc' }
+          : { likes: { _count: 'desc' } },
         select: this.#submissionSelect,
       }),
       this.#prisma.submission.count({ where }),

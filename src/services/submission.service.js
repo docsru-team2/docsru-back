@@ -1,7 +1,75 @@
+import { ERROR_CODE } from '#constants';
+import {
+  ConflictException,
+  ForbiddenException,
+  NotFoundException,
+} from '#exceptions';
+
 export class SubmissionService {
-  constructor({ submissionRepository, challengeRepository, notificationService }) {
-    this.submissionRepository = submissionRepository;
+  #submissionRepository;
+
+  constructor({
+    submissionRepository,
+    challengeRepository,
+    notificationService,
+  }) {
+    this.#submissionRepository = submissionRepository;
     this.challengeRepository = challengeRepository;
     this.notificationService = notificationService;
+  }
+  //챌린지별 작업물 전체 목록
+  async findAll(params) {
+    const { challengeId, page = 1, limit = 10, orderBy } = params || {};
+    const [list, totalCount] = await this.#submissionRepository.findAll(
+      challengeId,
+      { page: Number(page), limit: Number(limit), orderBy },
+    );
+
+    return {
+      list,
+      pagination: {
+        totalCount,
+        hasNext: page * limit < totalCount /* Boolean */,
+      },
+    };
+  }
+
+  //베스트 작업물 목록 조회
+  async findBestList(challengeId) {
+    return await this.#submissionRepository.findBestList(challengeId);
+  }
+
+  //작업물 상세
+  async findDetail(id) {
+    const submission = await this.#submissionRepository.findById(id);
+    if (!submission)
+      throw new NotFoundException(ERROR_CODE.SUBMISSION_NOT_FOUND);
+    return submission;
+  }
+
+  //작업물 생성
+  async create(challengeId, userId, data) {
+    const itExists = await this.#submissionRepository.findIfUserSubmit(
+      challengeId,
+      userId,
+    );
+    if (itExists) {
+      throw new ConflictException(ERROR_CODE.SUBMISSION_ALREADY_EXISTS);
+    }
+    return await this.#submissionRepository.create({
+      ...data,
+      challengeId,
+      userId,
+    });
+  }
+
+  //작업물 수정
+  async update(submissionId, updateData) {
+    return await this.#submissionRepository.update(submissionId, updateData);
+  }
+
+  //작업물 삭제처리(소프트)
+  async delete(submissionId) {
+    return await this.#submissionRepository.updateToDeleted(submissionId);
   }
 }
