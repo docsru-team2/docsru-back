@@ -1,9 +1,12 @@
 import { HTTP_STATUS } from '#constants';
 import { BaseController } from '#controllers/base.controller.js';
+import { validate } from '#middlewares';
+import { idParamSchema } from './dto/submission.dto.js';
 
 export class SubmissionController extends BaseController {
   // #submissionService
   #feedbackService;
+  #submissionLikeService;
 
   #reqData(req) {
     return {
@@ -14,16 +17,66 @@ export class SubmissionController extends BaseController {
     };
   }
 
-  constructor({ submissionService, feedbackService }) {
+  constructor({ submissionService, feedbackService, submissionLikeService }) {
     super();
     this.submissionService = submissionService;
     this.#feedbackService = feedbackService;
+    this.#submissionLikeService = submissionLikeService;
   }
 
   routes() {
+    //좋아요
+    this.router.post(
+      '/:id/likes',
+      validate('params', idParamSchema),
+      (req, res, next) => this.like(req, res, next),
+    );
+
+    //좋아요 취소
+    this.router.delete(
+      '/:id/likes',
+      validate('params', idParamSchema),
+      (req, res, next) => this.cancel(req, res, next),
+    );
+
     return this.router;
   }
 
+  //메소드들
+
+
+  
+  //피드백
+  //피드백 전체 조회
+  async getAll(req, res, next) {
+    try {
+      const { submissionId } = this.#reqData(req);
+      const { page, limit, orderBy } = req.query;
+
+      const result = await this.#feedbackService.findAll({
+        submissionId,
+        page: Number(page) || 1,
+        limit: Number(limit) || 3,
+        orderBy,
+      });
+
+      res.status(HTTP_STATUS.OK).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+  //피드백 단일 조회
+  async getOne(req, res, next) {
+    try {
+      const { id } = req.params;
+      const feedback = await this.#feedbackService.findDetail(id);
+      res.status(HTTP_STATUS.OK).json(feedback);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  //피드백 생성
   async make(req, res, next) {
     try {
       const { submissionId, userId, data } = this.#reqData(req);
@@ -42,29 +95,41 @@ export class SubmissionController extends BaseController {
     }
   }
 
-  async getAll(req, res, next) {
+  //좋아요
+  //작업물 좋아요
+  async like(req, res, next) {
     try {
-      const { submissionId } = this.#reqData(req);
-      const { page, limit, orderBy } = req.query;
-
-      const result = await this.#feedbackService.findAll({
+      const { id: submissionId } = req.params;
+      const userId = req.user.id;
+      const result = await this.#submissionLikeService.like(
         submissionId,
-        page: Number(page) || 1,
-        limit: Number(limit) || 3,
-        orderBy,
-      });
+        userId,
+      );
 
-      res.status(HTTP_STATUS.OK).json(result);
+      res.status(HTTP_STATUS.CREATED).json({
+        success: true,
+        message: '번역 좋아요!',
+        data: result,
+      });
     } catch (error) {
       next(error);
     }
   }
-
-  async getOne(req, res, next) {
+  //작업물 좋아요 취소
+  async cancel(req, res, next) {
     try {
-      const { id } = req.params;
-      const feedback = await this.#feedbackService.findDetail(id);
-      res.status(HTTP_STATUS.OK).json(feedback);
+      const { id: submissionId } = req.params;
+      const userId = req.user.id;
+      const result = await this.#submissionLikeService.cancel(
+        submissionId,
+        userId,
+      );
+
+      res.status(HTTP_STATUS.OK).json({
+        success: true,
+        message: '번역 좋아요 취소!',
+        data: { id: result.id },
+      });
     } catch (error) {
       next(error);
     }
