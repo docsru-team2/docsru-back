@@ -1,3 +1,5 @@
+import { SUBMISSION_ORDER_BY } from '#constants';
+
 export class SubmissionRepository {
   #prisma;
 
@@ -6,6 +8,11 @@ export class SubmissionRepository {
       ...filter,
       ...(isAdmin ? {} : { isDeleted: false }),
     };
+  }
+
+  #orderByCase(orderBy) {
+    if (typeof orderBy === 'object' && orderBy !== null) return orderBy;
+    return SUBMISSION_ORDER_BY[orderBy] || { likes: { _count: 'desc' } };
   }
 
   constructor({ prisma }) {
@@ -45,9 +52,7 @@ export class SubmissionRepository {
         where,
         skip,
         take: limit,
-        orderBy: orderBy
-          ? { [orderBy]: 'desc' }
-          : { likes: { _count: 'desc' } },
+        orderBy: this.#orderByCase,
         select: this.#submissionSelect,
       }),
       this.#prisma.submission.count({ where }),
