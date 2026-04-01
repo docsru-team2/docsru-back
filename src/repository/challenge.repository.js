@@ -7,6 +7,9 @@ export class ChallengeRepository {
     userType = 'USER',
     userId,
     viewType,
+    field,
+    documentType,
+    progressStatus,
     ...rest
   } = {}) {
     const { userId: _, ...pureRest } = rest;
@@ -29,6 +32,11 @@ export class ChallengeRepository {
           some: { userId: userId },
         },
       }),
+      ...(field && {
+        field: Array.isArray(field) ? { in: field } : field,
+      }),
+      ...(documentType && { documentType }),
+      ...(progressStatus && { progressStatus }),
       ...pureRest,
     };
   }
@@ -77,6 +85,9 @@ export class ChallengeRepository {
     reviewStatus,
     viewType,
     userType,
+    field,
+    documentType,
+    progressStatus,
   }) {
     const skip = (page - 1) * limit;
     const where = this.#whereCase({
@@ -84,6 +95,9 @@ export class ChallengeRepository {
       reviewStatus,
       userType,
       viewType,
+      field,
+      documentType,
+      progressStatus,
     });
 
     return await Promise.all([
@@ -98,25 +112,57 @@ export class ChallengeRepository {
     ]);
   }
 
-  // 내가 참여 중인 챌린지 OR 완료된 챌린지 OR 신청한 챌린지 - 목록 조회
+  // 내가 참여 중인 챌린지 OR 완료된 챌린지 - 목록 조회 (/challenges/joined)
   async findByMyList({
     page = 1,
     limit = 10,
     keyword,
     userId,
-    reviewStatus = 'APPROVED',
     progressStatus,
     orderBy,
-    userType = 'USER',
   }) {
     const skip = (page - 1) * limit;
-    const where = this.#whereCase({
-      keyword,
-      userId,
-      reviewStatus,
-      progressStatus,
-      userType,
-    });
+    const where = {
+      reviewStatus: 'APPROVED',
+      participants: { some: { userId } },
+      ...(keyword?.trim() && {
+        title: { contains: keyword.trim(), mode: 'insensitive' },
+      }),
+      ...(progressStatus && { progressStatus }),
+      ...(progressStatus === 'CLOSED' && userId
+        ? { submissions: { some: { userId } } }
+        : {}),
+    };
+
+    return await Promise.all([
+      this.#prisma.challenge.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy,
+        select: this.#challengeListSelect,
+      }),
+      this.#prisma.challenge.count({ where }),
+    ]);
+  }
+
+  // 내가 생성한 챌린지 목록 조회 (/challenges/me/applied)
+  async findCreatedChallenges({
+    page = 1,
+    limit = 10,
+    keyword,
+    creatorId,
+    reviewStatus,
+    orderBy,
+  }) {
+    const skip = (page - 1) * limit;
+    const where = {
+      creatorId,
+      ...(keyword?.trim() && {
+        title: { contains: keyword.trim(), mode: 'insensitive' },
+      }),
+      ...(reviewStatus ? { reviewStatus } : {}),
+    };
 
     return await Promise.all([
       this.#prisma.challenge.findMany({

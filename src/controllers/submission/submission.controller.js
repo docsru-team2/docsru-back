@@ -3,7 +3,7 @@ import { BaseController } from '#controllers/base.controller.js';
 import { needsLogin, validate, checkOwnership } from '#middlewares';
 import {
   idParamSchema,
-  // createDraftSchema,
+  submissionIdParamSchema,
   editSubmissionSchema,
 } from './dto/submission.dto.js';
 
@@ -40,7 +40,7 @@ export class SubmissionController extends BaseController {
       '/:id',
       needsLogin,
       validate('params', idParamSchema, 'body', editSubmissionSchema),
-      checkOwnership(this.#submissionService, 'creatorId'),
+      checkOwnership(this.#submissionService, 'userId'),
       (req, res, next) => this.editSubmission(req, res, next),
     );
     //작업물 삭제
@@ -48,7 +48,7 @@ export class SubmissionController extends BaseController {
       '/:id',
       needsLogin,
       validate('params', idParamSchema),
-      checkOwnership(this.#submissionService, 'creatorId'),
+      checkOwnership(this.#submissionService, 'userId'),
       (req, res, next) => this.deleteSubmission(req, res, next),
     );
 
@@ -56,28 +56,28 @@ export class SubmissionController extends BaseController {
     //피드백 목록 조회
     this.router.get(
       '/:submissionId/feedbacks',
-      validate('params', idParamSchema),
+      validate('params', submissionIdParamSchema),
       (req, res, next) => this.getAllFeedback(req, res, next),
     );
 
     //피드백 생성
     this.router.post(
       '/:submissionId/feedbacks',
-      validate('params', idParamSchema),
+      validate('params', submissionIdParamSchema),
       (req, res, next) => this.createFeedback(req, res, next),
     );
 
     //좋아요
     this.router.post(
       '/:submissionId/likes',
-      validate('params', idParamSchema),
+      validate('params', submissionIdParamSchema),
       (req, res, next) => this.like(req, res, next),
     );
 
     //좋아요 취소
     this.router.delete(
       '/:submissionId/likes',
-      validate('params', idParamSchema),
+      validate('params', submissionIdParamSchema),
       (req, res, next) => this.cancel(req, res, next),
     );
 

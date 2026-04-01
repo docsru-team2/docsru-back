@@ -56,26 +56,29 @@ export class AuthController extends BaseController {
   // 일반 회원가입
   async signUp(req, res) {
     const { email, password, nickname } = req.body;
-    const { user, accessToken, refreshToken } = await this.#authService.signUp({
+    const { user } = await this.#authService.signUp({
       email,
       password,
       nickname,
     });
 
-    this.#cookieProvider.setAuthCookies(res, { refreshToken });
-    res.status(HTTP_STATUS.CREATED).json({ user, accessToken });
+    res
+      .status(HTTP_STATUS.CREATED)
+      .json({ success: true, data: user, message: '회원가입 성공!' });
   }
 
   //일반 로그인
   async login(req, res) {
     const { email, password } = req.body;
-    const { user, accessToken, refreshToken } = await this.#authService.login({
+    const { user, tokens } = await this.#authService.login({
       email,
       password,
     });
 
-    this.#cookieProvider.setAuthCookies(res, { refreshToken });
-    res.status(HTTP_STATUS.OK).json({ user, accessToken });
+    this.#cookieProvider.setAuthCookies(res, tokens);
+    res
+      .status(HTTP_STATUS.OK)
+      .json({ success: true, data: user, message: '로그인 성공!' });
   }
 
   //일반 로그아웃
@@ -89,13 +92,13 @@ export class AuthController extends BaseController {
   //토큰 리프레시
   async refresh(req, res, next) {
     try {
-      const { refreshToken: staleRefreshToken } = req.cookies;
-      const { accessToken, refreshToken: freshtoken } =
-        await this.#authService.refreshTokens(staleRefreshToken);
+      const { refreshToken: staleRefreshTokens } = req.cookies;
+      const { tokens } =
+        await this.#authService.refreshTokens(staleRefreshTokens);
 
-      this.#cookieProvider.setAuthCookies(res, { refreshToken: freshtoken });
+      this.#cookieProvider.setAuthCookies(res, tokens);
 
-      res.status(HTTP_STATUS.OK).json({ accessToken });
+      res.status(HTTP_STATUS.OK).json(tokens);
     } catch (error) {
       next(error);
     }
@@ -118,16 +121,18 @@ export class AuthController extends BaseController {
       throw new BadRequestException(ERROR_CODE.SOCIAL_AUTH_CODE_REQUIRED);
     }
 
-    const { tokens } = await this.#socialAuthService.loginOrSignUp({
+    const { tokens, isNewbie } = await this.#socialAuthService.loginOrSignUp({
       provider,
       code,
       state,
     });
 
-    this.#cookieProvider.setAuthCookies(res, tokens);
+    if (!isNewbie) {
+      this.#cookieProvider.setAuthCookies(res, tokens);
+    }
 
     const { next } = this.#decodeState(state);
-    const safeNext = this.#normalizeNextPath(next);
+    const safeNext = isNewbie ? '/join/welcome' : this.#normalizeNextPath(next);
     const redirectUrl = new URL(safeNext, config.CLIENT_BASE_URL).toString();
 
     return res.redirect(redirectUrl);

@@ -7,7 +7,11 @@ export const idParamSchema = z.object({
   }),
 });
 
-
+export const submissionIdParamSchema = z.object({
+  submissionId: z.ulid({
+    message: '데이터 식별 오류',
+  }),
+});
 
 //임시저장 생성 스키마
 export const createDraftSchema = z.object({

@@ -58,21 +58,28 @@ export class SubmissionRepository {
   async findBestList(id) {
     const listLikeDesc = await this.#prisma.submissionLike.groupBy({
       by: ['submissionId'],
-      where: { challengeId: id, isDeleted: false },
-      _count: { _all: true },
-      orderBy: { _count: { _all: 'desc' } },
-      take: 1,
+      where: {
+        submission: {
+          challengeId: id,
+          isDeleted: false,
+        },
+      },
+      _count: { submissionId: true },
+      orderBy: { _count: { submissionId: 'desc' } },
     });
 
     if (listLikeDesc.length === 0) return [];
 
-    const maxLikes = listLikeDesc[0]._count._all;
+    const maxLikes = listLikeDesc[0]._count.submissionId;
+
+    const bestIds = listLikeDesc
+      .filter((item) => item._count.submissionId === maxLikes)
+      .map((item) => item.submissionId);
 
     return await this.#prisma.submission.findMany({
       where: {
-        challengeId: id,
+        id: { in: bestIds },
         isDeleted: false,
-        likes: { _count: maxLikes },
       },
       select: this.#submissionSelect,
     });

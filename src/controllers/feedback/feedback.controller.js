@@ -1,6 +1,6 @@
 import { HTTP_STATUS } from '#constants';
 import { BaseController } from '#controllers/base.controller.js';
-import { validate, checkOwnership } from '#middlewares';
+import { validate, checkOwnership, needsLogin } from '#middlewares';
 import { idParamSchema } from './dto/feedback.dto.js';
 
 export class FeedbackController extends BaseController {
@@ -21,12 +21,14 @@ export class FeedbackController extends BaseController {
   routes() {
     this.router.patch(
       '/:id',
+      needsLogin,
       validate('params', idParamSchema),
       checkOwnership(this.#feedbackService, 'userId'),
       (req, res, next) => this.update(req, res, next),
     );
     this.router.delete(
       '/:id',
+      needsLogin,
       validate('params', idParamSchema),
       checkOwnership(this.#feedbackService, 'userId'),
       (req, res, next) => this.delete(req, res, next),
