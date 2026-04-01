@@ -76,7 +76,7 @@ export class ChallengeService {
     if (isJoined) {
       throw new ConflictException(ERROR_CODE.CHALLENGE_ALREADY_JOINED);
     }
-    const challenge = await this.findDetail(challengeId);
+    const challenge = await this.#challengeRepository.findDetail(challengeId);
     const participantsCount = await this.#participantRepository.findAll({
       id: challengeId,
     });
