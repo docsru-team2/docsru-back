@@ -47,9 +47,17 @@ async function run() {
     console.log('✅ tester 유저 기존 계정 사용');
   }
 
-  // 2. admin 유저 찾기 (챌린지 creator로 사용)
+  // 2. admin 유저 찾기
   const admin = await prisma.user.findFirst({ where: { userType: 'ADMIN' } });
   if (!admin) throw new Error('❌ admin 유저가 없습니다. seed를 먼저 실행해주세요.');
+
+  // 일반 유저 목록 (챌린지 creator 랜덤 배정용)
+  const normalUsers = await prisma.user.findMany({
+    where: { userType: 'USER', id: { not: tester.id } },
+    select: { id: true },
+  });
+  if (normalUsers.length === 0) throw new Error('❌ 일반 유저가 없습니다. seed를 먼저 실행해주세요.');
+  const randomCreatorId = () => normalUsers[Math.floor(Math.random() * normalUsers.length)].id;
 
   // 3. APPROVED + OPEN 챌린지 100개 (admin 생성) + tester 참여 (joined OPEN 테스트용)
   const openChallenges = [];
@@ -66,7 +74,7 @@ async function run() {
         maxParticipants: 20,
         reviewStatus: 'APPROVED',
         progressStatus: 'OPEN',
-        creatorId: admin.id,
+        creatorId: randomCreatorId(),
       },
     });
     await prisma.challengeParticipant.create({
@@ -90,7 +98,7 @@ async function run() {
         maxParticipants: 20,
         reviewStatus: 'APPROVED',
         progressStatus: 'CLOSED',
-        creatorId: admin.id,
+        creatorId: randomCreatorId(),
       },
     });
     await prisma.challengeParticipant.create({
@@ -147,7 +155,7 @@ async function run() {
   }
   console.log('✅ tester 생성 DELETED 챌린지 50개 생성');
 
-  // 5. PENDING 챌린지 50개 + tester 참여 (applied reviewStatus 테스트용)
+  // 5. PENDING 챌린지 50개 + tester 참여 (admin 생성, joined 테스트용)
   for (let i = 0; i < 50; i++) {
     const challenge = await prisma.challenge.create({
       data: {
@@ -160,7 +168,7 @@ async function run() {
         createdAt: pastCreatedAt(),
         maxParticipants: 20,
         reviewStatus: 'PENDING',
-        creatorId: tester.id,
+        creatorId: randomCreatorId(),
       },
     });
     await prisma.challengeParticipant.create({
@@ -169,7 +177,7 @@ async function run() {
   }
   console.log('✅ PENDING 챌린지 50개 생성 및 tester 참여');
 
-  // 6. REJECTED 챌린지 50개 + tester 참여
+  // 6. REJECTED 챌린지 50개 + tester 참여 (admin 생성, joined 테스트용)
   for (let i = 0; i < 50; i++) {
     const challenge = await prisma.challenge.create({
       data: {
@@ -183,7 +191,7 @@ async function run() {
         maxParticipants: 20,
         reviewStatus: 'REJECTED',
         rejectReason: '테스트용 거절 사유입니다.',
-        creatorId: tester.id,
+        creatorId: randomCreatorId(),
       },
     });
     await prisma.challengeParticipant.create({
@@ -206,7 +214,7 @@ async function run() {
         maxParticipants: 20,
         reviewStatus: 'DELETED',
         deleteReason: '테스트용 삭제 사유입니다.',
-        creatorId: admin.id,
+        creatorId: randomCreatorId(),
       },
     });
     await prisma.challengeParticipant.create({
