@@ -167,7 +167,7 @@ export class ChallengeController extends BaseController {
   async getOne(req, res, next) {
     try {
       const { id } = req.params;
-      const challenge = await this.#challengeService.findDetail(id);
+      const challenge = await this.#challengeService.findDetail(id, req.user);
       res.status(HTTP_STATUS.OK).json(challenge);
     } catch (error) {
       next(error);
