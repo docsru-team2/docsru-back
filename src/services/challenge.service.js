@@ -14,7 +14,7 @@ export class ChallengeService {
 
   // 챌린지 목록 조회 (통합)
   async findAll(params, isAdmin = false) {
-    const { page = 1, limit = 10, sort, ...rest } = params;
+    const { page = 1, limit = 10, orderBy: sort, ...rest } = params;
     const orderBy = CHALLENGE_ORDER_BY[sort] || DEFAULT_ORDER;
 
     const [list, totalCount] = await this.#challengeRepository.findAll({
