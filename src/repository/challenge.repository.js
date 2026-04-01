@@ -1,3 +1,5 @@
+import { CHALLENGE_ORDER_BY, DEFAULT_ORDER } from '#constants';
+
 export class ChallengeRepository {
   #prisma;
 
@@ -39,6 +41,12 @@ export class ChallengeRepository {
       ...(progressStatus && { progressStatus }),
       ...pureRest,
     };
+  }
+
+  #orderByCase(orderBy) {
+    if (typeof orderBy === 'object' && orderBy !== null) return orderBy;
+
+    return CHALLENGE_ORDER_BY[orderBy] || DEFAULT_ORDER;
   }
 
   constructor({ prisma }) {
@@ -105,7 +113,7 @@ export class ChallengeRepository {
         where,
         skip,
         take: limit,
-        orderBy,
+        orderBy: this.#orderByCase(orderBy),
         select: this.#challengeListSelect,
       }),
       this.#prisma.challenge.count({ where }),
@@ -139,7 +147,7 @@ export class ChallengeRepository {
         where,
         skip,
         take: limit,
-        orderBy,
+        orderBy: this.#orderByCase(orderBy),
         select: this.#challengeListSelect,
       }),
       this.#prisma.challenge.count({ where }),
@@ -169,7 +177,7 @@ export class ChallengeRepository {
         where,
         skip,
         take: limit,
-        orderBy,
+        orderBy: this.#orderByCase(orderBy),
         select: this.#challengeListSelect,
       }),
       this.#prisma.challenge.count({ where }),
