@@ -9,10 +9,8 @@ import { ERROR_CODE } from '#constants';
 
 // export const needsLogin = createAuthorizationMiddleware(hasLoginUser);
 
-// ✅ 에러 객체를 명시적으로 던지는 방식으로 수정!
 export const needsLogin = (req, res, next) => {
   if (!req.user || !req.user.id) {
-    // 💡 여기서 튕겨야 정상인데 안 튕긴다면 req.user가 엉뚱하게 채워져 있다는 증거!
     throw new UnauthorizedException(ERROR_CODE.AUTH_REQUIRED);
   }
   next();
