@@ -91,6 +91,31 @@ export const authPaths = {
     },
   },
 
+  '/auth/refresh': {
+    post: {
+      tags: ['Auth'],
+      summary: '토큰 갱신',
+      description: '쿠키의 refreshToken으로 새 accessToken, refreshToken을 발급합니다.',
+      responses: {
+        200: {
+          description: '토큰 갱신 성공',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  accessToken: { type: 'string' },
+                  refreshToken: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+        401: { description: '유효하지 않은 refreshToken', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+      },
+    },
+  },
+
   '/auth/me': {
     get: {
       tags: ['Auth'],
