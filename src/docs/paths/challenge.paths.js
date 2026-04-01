@@ -530,6 +530,172 @@ export const challengePaths = {
     },
   },
 
+  '/challenges/{challengeId}/submissions/best': {
+    get: {
+      tags: ['Challenge'],
+      summary: '베스트 작업물 목록 조회',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        { name: 'challengeId', in: 'path', required: true, schema: { type: 'string' }, description: '챌린지 ULID' },
+      ],
+      responses: {
+        200: { description: '베스트 작업물 목록' },
+        401: { description: '인증 필요', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+        404: { description: '챌린지 없음', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+      },
+    },
+  },
+
+  '/challenges/{challengeId}/submissions': {
+    get: {
+      tags: ['Challenge'],
+      summary: '작업물 목록 조회',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        { name: 'challengeId', in: 'path', required: true, schema: { type: 'string' }, description: '챌린지 ULID' },
+        { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
+        { name: 'limit', in: 'query', schema: { type: 'integer', default: 5 } },
+        { name: 'orderBy', in: 'query', schema: { type: 'string', enum: ['CREATED_DESC', 'CREATED_ASC', 'DEADLINE_ASC', 'DEADLINE_DESC'], default: 'CREATED_DESC' } },
+      ],
+      responses: {
+        200: { description: '작업물 목록' },
+        401: { description: '인증 필요', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+      },
+    },
+    post: {
+      tags: ['Challenge'],
+      summary: '작업물 생성',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        { name: 'challengeId', in: 'path', required: true, schema: { type: 'string' }, description: '챌린지 ULID' },
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              required: ['title', 'content'],
+              properties: {
+                title: { type: 'string', example: '작업물 제목' },
+                content: { type: 'string', example: '작업물 내용입니다.' },
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        200: { description: '작업물 생성 성공' },
+        401: { description: '인증 필요', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+      },
+    },
+  },
+
+  '/challenges/{challengeId}/drafts': {
+    get: {
+      tags: ['Challenge'],
+      summary: '임시저장 목록 조회',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        { name: 'challengeId', in: 'path', required: true, schema: { type: 'string' }, description: '챌린지 ULID' },
+        { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
+        { name: 'limit', in: 'query', schema: { type: 'integer', default: 10 } },
+      ],
+      responses: {
+        200: { description: '임시저장 목록' },
+        401: { description: '인증 필요', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+      },
+    },
+  },
+
+  '/challenges/{challengeId}/draft': {
+    post: {
+      tags: ['Challenge'],
+      summary: '임시저장 생성',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        { name: 'challengeId', in: 'path', required: true, schema: { type: 'string' }, description: '챌린지 ULID' },
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                title: { type: 'string', example: '임시저장 제목' },
+                content: { type: 'string', example: '임시저장 내용' },
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        201: { description: '임시저장 생성 성공' },
+        401: { description: '인증 필요', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+      },
+    },
+  },
+
+  '/challenges/{challengeId}/draft/{draftId}': {
+    get: {
+      tags: ['Challenge'],
+      summary: '임시저장 상세 조회',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        { name: 'challengeId', in: 'path', required: true, schema: { type: 'string' }, description: '챌린지 ULID' },
+        { name: 'draftId', in: 'path', required: true, schema: { type: 'string' }, description: '임시저장 ULID' },
+      ],
+      responses: {
+        200: { description: '임시저장 상세' },
+        401: { description: '인증 필요', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+        404: { description: '임시저장 없음', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+      },
+    },
+    patch: {
+      tags: ['Challenge'],
+      summary: '임시저장 수정',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        { name: 'challengeId', in: 'path', required: true, schema: { type: 'string' }, description: '챌린지 ULID' },
+        { name: 'draftId', in: 'path', required: true, schema: { type: 'string' }, description: '임시저장 ULID' },
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                title: { type: 'string' },
+                content: { type: 'string' },
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        200: { description: '임시저장 수정 성공' },
+        401: { description: '인증 필요', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+        404: { description: '임시저장 없음', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+      },
+    },
+    delete: {
+      tags: ['Challenge'],
+      summary: '임시저장 삭제',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        { name: 'challengeId', in: 'path', required: true, schema: { type: 'string' }, description: '챌린지 ULID' },
+        { name: 'draftId', in: 'path', required: true, schema: { type: 'string' }, description: '임시저장 ULID' },
+      ],
+      responses: {
+        200: { description: '임시저장 삭제 성공' },
+        401: { description: '인증 필요', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+        404: { description: '임시저장 없음', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+      },
+    },
+  },
+
   '/challenges/joined': {
     get: {
       tags: ['Challenge'],
