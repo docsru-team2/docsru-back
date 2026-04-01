@@ -195,8 +195,9 @@ export class ChallengeRepository {
           ? {}
           : {
               OR: [
-                ...(userId ? [{ creatorId: userId }] : []),
                 { reviewStatus: 'APPROVED' },
+                { reviewStatus: 'DELETED' },
+                ...(userId ? [{ creatorId: userId }] : []),
               ],
             }),
       },
