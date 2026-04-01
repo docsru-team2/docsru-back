@@ -52,7 +52,7 @@ export class SubmissionRepository {
         where,
         skip,
         take: limit,
-        orderBy: this.#orderByCase,
+        orderBy: this.#orderByCase(orderBy),
         select: this.#submissionSelect,
       }),
       this.#prisma.submission.count({ where }),
