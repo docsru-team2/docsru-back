@@ -11,6 +11,9 @@ export const cors = (req, res, next) => {
     }
   } else {
     res.header('Access-Control-Allow-Origin', origin ?? '*');
+    if (origin) {
+      res.header('Access-Control-Allow-Credentials', 'true');
+    }
   } // 개발 환경인데 Origin 헤더가 없는 경우(Postman 등)를 위해 최소한의 허용
 
   // 공통 헤더 설정
