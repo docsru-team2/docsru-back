@@ -298,6 +298,45 @@ async function run() {
   }
   console.log('✅ tester 생성 DELETED 챌린지 50개 생성');
 
+  // 4-3. tester가 생성한 PENDING 챌린지 (me/applied PENDING 테스트용)
+  for (let i = 0; i < 50; i++) {
+    await prisma.challenge.create({
+      data: {
+        title: `[테스터신청] PENDING 챌린지 ${FIELDS[i % FIELDS.length]} ${i + 1}`,
+        sourceUrl: SOURCE_URL_MAP[FIELDS[i % FIELDS.length]],
+        field: FIELDS[i % FIELDS.length],
+        documentType: DOCUMENT_TYPES[i % DOCUMENT_TYPES.length],
+        description: `tester가 신청하고 승인 대기 중인 챌린지입니다. (${i + 1})`,
+        deadline: futureDeadline(),
+        createdAt: pastCreatedAt(),
+        maxParticipants: 20,
+        reviewStatus: 'PENDING',
+        creatorId: tester.id,
+      },
+    });
+  }
+  console.log('✅ tester 생성 PENDING 챌린지 50개 생성');
+
+  // 4-4. tester가 생성한 REJECTED 챌린지 (me/applied REJECTED 테스트용)
+  for (let i = 0; i < 50; i++) {
+    await prisma.challenge.create({
+      data: {
+        title: `[테스터신청] REJECTED 챌린지 ${FIELDS[i % FIELDS.length]} ${i + 1}`,
+        sourceUrl: SOURCE_URL_MAP[FIELDS[i % FIELDS.length]],
+        field: FIELDS[i % FIELDS.length],
+        documentType: DOCUMENT_TYPES[i % DOCUMENT_TYPES.length],
+        description: `tester가 신청했다가 거절된 챌린지입니다. (${i + 1})`,
+        deadline: futureDeadline(),
+        createdAt: pastCreatedAt(),
+        maxParticipants: 20,
+        reviewStatus: 'REJECTED',
+        rejectReason: '테스트용 거절 사유입니다.',
+        creatorId: tester.id,
+      },
+    });
+  }
+  console.log('✅ tester 생성 REJECTED 챌린지 50개 생성');
+
   // 5. PENDING 챌린지 50개 + tester 참여 (admin 생성, joined 테스트용)
   for (let i = 0; i < 50; i++) {
     const challenge = await prisma.challenge.create({
