@@ -8,6 +8,13 @@ const TESTER_PASSWORD = 'test1!';
 
 const FIELDS = ['NEXT_JS', 'MODERN_JS', 'API', 'WEB', 'CAREER'];
 const DOCUMENT_TYPES = ['OFFICIAL_DOC', 'BLOG', 'BOOK', 'ETC'];
+const SOURCE_URL_MAP = {
+  NEXT_JS: 'https://nextjs.org/docs',
+  MODERN_JS: 'https://javascript.info',
+  API: 'https://developer.mozilla.org/ko/docs/Web/API',
+  WEB: 'https://developer.mozilla.org/ko/docs/Web',
+  CAREER: 'https://react.dev/reference/react',
+};
 
 const DAY = 1000 * 60 * 60 * 24;
 // 미래 마감일: 1~90일 뒤 랜덤
@@ -65,7 +72,7 @@ async function run() {
     const challenge = await prisma.challenge.create({
       data: {
         title: `[테스터용] OPEN 챌린지 ${FIELDS[i % FIELDS.length]} ${i + 1}`,
-        sourceUrl: 'https://example.com',
+        sourceUrl: SOURCE_URL_MAP[FIELDS[i % FIELDS.length]],
         field: FIELDS[i % FIELDS.length],
         documentType: DOCUMENT_TYPES[i % DOCUMENT_TYPES.length],
         description: `tester 테스트용 OPEN 챌린지입니다. (${i + 1})`,
@@ -89,7 +96,7 @@ async function run() {
     const challenge = await prisma.challenge.create({
       data: {
         title: `[테스터용] CLOSED 챌린지 ${FIELDS[i % FIELDS.length]} ${i + 1}`,
-        sourceUrl: 'https://example.com',
+        sourceUrl: SOURCE_URL_MAP[FIELDS[i % FIELDS.length]],
         field: FIELDS[i % FIELDS.length],
         documentType: DOCUMENT_TYPES[i % DOCUMENT_TYPES.length],
         description: `tester 테스트용 CLOSED 챌린지입니다. (${i + 1})`,
@@ -120,7 +127,7 @@ async function run() {
     await prisma.challenge.create({
       data: {
         title: `[테스터신청] APPROVED 챌린지 ${FIELDS[i % FIELDS.length]} ${i + 1}`,
-        sourceUrl: 'https://example.com',
+        sourceUrl: SOURCE_URL_MAP[FIELDS[i % FIELDS.length]],
         field: FIELDS[i % FIELDS.length],
         documentType: DOCUMENT_TYPES[i % DOCUMENT_TYPES.length],
         description: `tester가 신청하고 승인된 챌린지입니다. (${i + 1})`,
@@ -140,7 +147,7 @@ async function run() {
     await prisma.challenge.create({
       data: {
         title: `[테스터신청] DELETED 챌린지 ${FIELDS[i % FIELDS.length]} ${i + 1}`,
-        sourceUrl: 'https://example.com',
+        sourceUrl: SOURCE_URL_MAP[FIELDS[i % FIELDS.length]],
         field: FIELDS[i % FIELDS.length],
         documentType: DOCUMENT_TYPES[i % DOCUMENT_TYPES.length],
         description: `tester가 신청했다가 삭제된 챌린지입니다. (${i + 1})`,
@@ -160,7 +167,7 @@ async function run() {
     const challenge = await prisma.challenge.create({
       data: {
         title: `[테스터용] PENDING 챌린지 ${FIELDS[i % FIELDS.length]} ${i + 1}`,
-        sourceUrl: 'https://example.com',
+        sourceUrl: SOURCE_URL_MAP[FIELDS[i % FIELDS.length]],
         field: FIELDS[i % FIELDS.length],
         documentType: DOCUMENT_TYPES[i % DOCUMENT_TYPES.length],
         description: `tester 테스트용 PENDING 챌린지입니다. (${i + 1})`,
@@ -182,7 +189,7 @@ async function run() {
     const challenge = await prisma.challenge.create({
       data: {
         title: `[테스터용] REJECTED 챌린지 ${FIELDS[i % FIELDS.length]} ${i + 1}`,
-        sourceUrl: 'https://example.com',
+        sourceUrl: SOURCE_URL_MAP[FIELDS[i % FIELDS.length]],
         field: FIELDS[i % FIELDS.length],
         documentType: DOCUMENT_TYPES[i % DOCUMENT_TYPES.length],
         description: `tester 테스트용 REJECTED 챌린지입니다. (${i + 1})`,
@@ -205,7 +212,7 @@ async function run() {
     const challenge = await prisma.challenge.create({
       data: {
         title: `[테스터용] DELETED 챌린지 ${FIELDS[i % FIELDS.length]} ${i + 1}`,
-        sourceUrl: 'https://example.com',
+        sourceUrl: SOURCE_URL_MAP[FIELDS[i % FIELDS.length]],
         field: FIELDS[i % FIELDS.length],
         documentType: DOCUMENT_TYPES[i % DOCUMENT_TYPES.length],
         description: `tester 테스트용 DELETED 챌린지입니다. (${i + 1})`,
