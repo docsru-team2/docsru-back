@@ -118,7 +118,7 @@ export class SubmissionRepository {
   //작업물 수정
   update(id, data) {
     return this.#prisma.submission.update({
-      where: this.#whereCase({ id }),
+      where: { id },
       data,
       select: this.#submissionSelect,
     });
@@ -127,7 +127,7 @@ export class SubmissionRepository {
   //작업물 삭제 (소프트 삭제)
   updateToDeleted(id) {
     return this.#prisma.submission.update({
-      where: this.#whereCase({ id }),
+      where: { id },
       data: { isDeleted: true },
       select: {
         id: true,

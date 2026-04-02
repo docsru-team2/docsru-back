@@ -38,13 +38,13 @@ export class ChallengeController extends BaseController {
     this.router.get('/joined', needsLogin, (req, res, next) =>
       this.getJoined(req, res, next),
     );
-
-    this.router.get('/', (req, res, next) => this.getAll(req, res, next));
     this.router.get(
       '/:id',
       validate('params', idParamSchema),
       (req, res, next) => this.getOne(req, res, next),
     );
+
+    this.router.get('/', (req, res, next) => this.getAll(req, res, next));
     this.router.post(
       '/',
       needsLogin,
@@ -80,8 +80,12 @@ export class ChallengeController extends BaseController {
     );
 
     // 임시저장
+    this.router.get('/drafts', needsLogin, (req, res, next) =>
+      this.getAllMyDraft(req, res, next),
+    );
+
     this.router.get('/:challengeId/drafts', needsLogin, (req, res, next) =>
-      this.getAllDraft(req, res, next),
+      this.getMyDraftByChallenge(req, res, next),
     );
     this.router.get(
       '/:challengeId/draft/:draftId',
@@ -206,7 +210,7 @@ export class ChallengeController extends BaseController {
     try {
       const { id } = req.params;
       await this.#challengeService.delete(id, req.user.id);
-      res.status(HTTP_STATUS.NO_CONTENT).json({
+      res.status(HTTP_STATUS.OK).json({
         success: true,
         message: '챌린지 신청이 취소되었습니다.',
       });
@@ -322,7 +326,7 @@ export class ChallengeController extends BaseController {
   }
 
   // 임시저장 목록 조회
-  async getAllDraft(req, res, next) {
+  async getAllMyDraft(req, res, next) {
     try {
       const { page, limit } = req.query;
       const userId = req.user.id;
@@ -339,11 +343,31 @@ export class ChallengeController extends BaseController {
     }
   }
 
+  // 챌린지별 임시저장 목록 조회
+  async getMyDraftByChallenge(req, res, next) {
+    try {
+      const { page, limit } = req.query;
+      const userId = req.user.id;
+      const challengeId = req.challenge.id;
+
+      const result = await this.#draftService.findByChallenge({
+        userId,
+        challengeId,
+        page: Number(page) || 1,
+        limit: Number(limit) || 10,
+      });
+
+      res.status(HTTP_STATUS.OK).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   // 임시저장 상세 조회
   async getOneDraft(req, res, next) {
     try {
-      const { id } = req.params;
-      const draft = await this.#draftService.findDetail(id);
+      const { draftId } = req.params;
+      const draft = await this.#draftService.findDetail(draftId);
       res.status(HTTP_STATUS.OK).json({ success: true, data: draft });
     } catch (error) {
       next(error);

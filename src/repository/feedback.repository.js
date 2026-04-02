@@ -3,13 +3,13 @@ import { ORDER_BY_CREATED } from '#constants';
 export class FeedbackRepository {
   #prisma;
 
+  constructor({ prisma }) {
+    this.#prisma = prisma;
+  }
+
   #orderByCase(orderBy) {
     if (typeof orderBy === 'object' && orderBy !== null) return orderBy;
     return ORDER_BY_CREATED[orderBy] || { createdAt: 'desc' };
-  }
-
-  constructor({ prisma }) {
-    this.#prisma = prisma;
   }
 
   get #feedbackSelect() {
