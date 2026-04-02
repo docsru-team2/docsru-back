@@ -3,15 +3,20 @@ import { ConflictException, NotFoundException } from '#exceptions';
 
 export class SubmissionService {
   #submissionRepository;
+  #challengeRepository;
+  #challengeParticipantRepository;
+  // #notificationService;
 
   constructor({
     submissionRepository,
     challengeRepository,
-    notificationService,
+    challengeParticipantRepository,
+    // notificationService,
   }) {
     this.#submissionRepository = submissionRepository;
-    this.challengeRepository = challengeRepository;
-    this.notificationService = notificationService;
+    this.#challengeRepository = challengeRepository;
+    this.#challengeParticipantRepository = challengeParticipantRepository;
+    // this.#notificationService = notificationService;
   }
   //챌린지별 작업물 전체 목록
   async findAll(params) {
@@ -51,6 +56,36 @@ export class SubmissionService {
     );
     if (itExists) {
       throw new ConflictException(ERROR_CODE.SUBMISSION_ALREADY_EXISTS);
+    }
+    const challenge = await this.#challengeRepository.findById(challengeId);
+    if (!challenge) {
+      throw new NotFoundException(ERROR_CODE.CHALLENGE_NOT_FOUND);
+    }
+    if (challenge.progressStatus !== 'OPEN') {
+      throw new ConflictException(ERROR_CODE.CHALLENGE_NOT_OPEN);
+    }
+
+    const isParticipant =
+      await this.#challengeParticipantRepository.findIfUserInChallenge(
+        challengeId,
+        userId,
+      );
+
+    if (!isParticipant) {
+      const { totalCount } = await this.#challengeParticipantRepository.findAll(
+        {
+          id: challengeId,
+        },
+      );
+      if (totalCount >= challenge.maxParticipants) {
+        throw new ConflictException(
+          ERROR_CODE.CHALLENGE_PARTICIPANT_LIMIT_EXCEEDED,
+        );
+      }
+      await this.#challengeParticipantRepository.joinChallenge(
+        challengeId,
+        userId,
+      );
     }
     return await this.#submissionRepository.create({
       ...data,

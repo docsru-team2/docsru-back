@@ -98,7 +98,9 @@ export class AuthController extends BaseController {
 
       this.#cookieProvider.setAuthCookies(res, tokens);
 
-      res.status(HTTP_STATUS.OK).json(tokens);
+      res
+        .status(HTTP_STATUS.OK)
+        .json({ success: true, message: '토큰을 정상적으로 재발급했습니다.' });
     } catch (error) {
       next(error);
     }

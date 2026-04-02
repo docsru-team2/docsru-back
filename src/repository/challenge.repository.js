@@ -3,55 +3,50 @@ import { CHALLENGE_ORDER_BY, DEFAULT_ORDER } from '#constants';
 export class ChallengeRepository {
   #prisma;
 
+  constructor({ prisma }) {
+    this.#prisma = prisma;
+  }
+
   #whereCase({
     keyword,
     reviewStatus,
     userType = 'USER',
-    userId,
-    viewType,
     field,
     documentType,
     progressStatus,
     ...rest
   } = {}) {
-    const { userId: _, ...pureRest } = rest;
     const isAdmin = userType.toUpperCase() === 'ADMIN';
 
-    const reviewStatusFilter =
-      !isAdmin || viewType === 'LIST'
-        ? { reviewStatus: 'APPROVED' }
-        : reviewStatus
-          ? { reviewStatus }
-          : {};
+    const filter = { ...rest };
 
-    return {
-      ...(keyword?.trim() && {
-        title: { contains: keyword.trim(), mode: 'insensitive' },
-      }),
-      ...reviewStatusFilter,
-      ...(userId && {
-        participants: {
-          some: { userId: userId },
-        },
-      }),
-      ...(field && {
-        field: Array.isArray(field) ? { in: field } : field,
-      }),
-      ...(documentType && { documentType }),
-      ...(progressStatus && { progressStatus }),
-      ...pureRest,
-    };
+    if (keyword?.trim()) {
+      filter.title = { contains: keyword.trim(), mode: 'insensitive' };
+    }
+
+    if (isAdmin) {
+      if (reviewStatus) filter.reviewStatus = reviewStatus;
+      if (progressStatus) filter.progressStatus = progressStatus;
+    } else {
+      filter.reviewStatus = 'APPROVED';
+      filter.progressStatus = 'OPEN';
+    }
+
+    if (field) {
+      filter.field = Array.isArray(field) ? { in: field } : field;
+    }
+
+    if (documentType) filter.documentType = documentType;
+
+    return filter;
   }
 
-  #orderByCase(orderBy) {
-    if (typeof orderBy === 'object' && orderBy !== null) return orderBy;
+  #orderByCase(orderBy = DEFAULT_ORDER) {
+    if (orderBy && typeof orderBy === 'object') return orderBy;
 
-    return CHALLENGE_ORDER_BY[orderBy] || DEFAULT_ORDER;
+    return CHALLENGE_ORDER_BY[orderBy];
   }
 
-  constructor({ prisma }) {
-    this.#prisma = prisma;
-  }
   get #challengeListSelect() {
     return {
       id: true,
@@ -99,7 +94,6 @@ export class ChallengeRepository {
     orderBy,
     keyword,
     reviewStatus,
-    viewType,
     userType,
     field,
     documentType,
@@ -110,7 +104,6 @@ export class ChallengeRepository {
       keyword,
       reviewStatus,
       userType,
-      viewType,
       field,
       documentType,
       progressStatus,
@@ -138,16 +131,20 @@ export class ChallengeRepository {
     orderBy,
   }) {
     const skip = (page - 1) * limit;
+    const reviewStatusFilter =
+      progressStatus === 'CLOSED'
+        ? { in: ['APPROVED', 'DELETED'] }
+        : 'APPROVED';
     const where = {
-      reviewStatus: 'APPROVED',
+      reviewStatus: reviewStatusFilter,
       participants: { some: { userId } },
+      ...(progressStatus === 'CLOSED' && {
+        submissions: { some: { userId } },
+      }),
       ...(keyword?.trim() && {
         title: { contains: keyword.trim(), mode: 'insensitive' },
       }),
       ...(progressStatus && { progressStatus }),
-      ...(progressStatus === 'CLOSED' && userId
-        ? { submissions: { some: { userId } } }
-        : {}),
     };
 
     return await Promise.all([
@@ -204,8 +201,15 @@ export class ChallengeRepository {
           : {
               OR: [
                 { reviewStatus: 'APPROVED' },
-                { reviewStatus: 'DELETED' },
                 ...(userId ? [{ creatorId: userId }] : []),
+                ...(userId
+                  ? [
+                      {
+                        reviewStatus: 'DELETED',
+                        submissions: { some: { userId } },
+                      },
+                    ]
+                  : []),
               ],
             }),
       },
@@ -248,6 +252,13 @@ export class ChallengeRepository {
 
   // 관리자 - 검토 상태 변경 (승인/거절)
   updateReviewStatus(id, { reviewStatus, progressStatus, rejectReason }) {
+    progressStatus =
+      reviewStatus === 'APPROVED'
+        ? 'OPEN'
+        : reviewStatus === 'DELETED'
+          ? 'CLOSED'
+          : null; //REJECTED, PENDING
+
     return this.#prisma.challenge.update({
       where: { id },
       data: {
@@ -285,7 +296,7 @@ export class ChallengeRepository {
       where: { id },
       data: {
         reviewStatus: 'DELETED',
-        progressStatus: null,
+        progressStatus: 'CLOSED',
         rejectReason: null,
         deleteReason,
       },

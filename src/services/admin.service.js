@@ -43,7 +43,13 @@ export class AdminService {
       documentType,
       progressStatus,
     });
-    return { list, totalCount, hasNext: page * limit < totalCount };
+    return {
+      list,
+      pagination: {
+        totalCount,
+        hasNext: Number(page) * Number(limit) < totalCount,
+      },
+    };
   }
 
   //챌린지 상세 조회
