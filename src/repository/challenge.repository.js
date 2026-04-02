@@ -257,19 +257,13 @@ export class ChallengeRepository {
   }
 
   // 관리자 - 검토 상태 변경 (승인/거절)
-  updateReviewStatus(id, { reviewStatus, progressStatus, rejectReason }) {
-    progressStatus =
-      reviewStatus === 'APPROVED'
-        ? 'OPEN'
-        : reviewStatus === 'DELETED'
-          ? 'CLOSED'
-          : null; //REJECTED, PENDING
+  updateReviewStatus(id, { reviewStatus, rejectReason }) {
 
     return this.#prisma.challenge.update({
       where: { id },
       data: {
         reviewStatus,
-        progressStatus,
+        progressStatus: reviewStatus === 'APPROVED' ? 'OPEN' : null,
         rejectReason: reviewStatus === 'APPROVED' ? null : rejectReason,
         deleteReason: null,
       },
@@ -302,7 +296,7 @@ export class ChallengeRepository {
       where: { id },
       data: {
         reviewStatus: 'DELETED',
-        progressStatus: 'CLOSED',
+        progressStatus: null,
         rejectReason: null,
         deleteReason,
       },
