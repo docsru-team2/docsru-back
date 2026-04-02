@@ -11,34 +11,40 @@ export class ChallengeRepository {
     keyword,
     reviewStatus,
     userType = 'USER',
+    userId,
+    viewType,
     field,
     documentType,
     progressStatus,
     ...rest
   } = {}) {
+    const { userId: _, ...pureRest } = rest;
     const isAdmin = userType.toUpperCase() === 'ADMIN';
 
-    const filter = { ...rest };
+    const reviewStatusFilter =
+      !isAdmin || viewType === 'LIST'
+        ? { reviewStatus: 'APPROVED' }
+        : reviewStatus
+          ? { reviewStatus }
+          : {};
 
-    if (keyword?.trim()) {
-      filter.title = { contains: keyword.trim(), mode: 'insensitive' };
-    }
-
-    if (isAdmin) {
-      if (reviewStatus) filter.reviewStatus = reviewStatus;
-      if (progressStatus) filter.progressStatus = progressStatus;
-    } else {
-      filter.reviewStatus = 'APPROVED';
-      filter.progressStatus = 'OPEN';
-    }
-
-    if (field) {
-      filter.field = Array.isArray(field) ? { in: field } : field;
-    }
-
-    if (documentType) filter.documentType = documentType;
-
-    return filter;
+    return {
+      ...(keyword?.trim() && {
+        title: { contains: keyword.trim(), mode: 'insensitive' },
+      }),
+      ...reviewStatusFilter,
+      ...(userId && {
+        participants: {
+          some: { userId: userId },
+        },
+      }),
+      ...(field && {
+        field: Array.isArray(field) ? { in: field } : field,
+      }),
+      ...(documentType && { documentType }),
+      ...(progressStatus && { progressStatus }),
+      ...pureRest,
+    };
   }
 
   #orderByCase(orderBy = DEFAULT_ORDER) {
