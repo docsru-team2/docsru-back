@@ -81,6 +81,14 @@ export class ChallengeRepository {
       creator: {
         select: { id: true, nickname: true },
       },
+      submissions: {
+        select: {
+          id: true,
+        },
+      },
+      _count: {
+        select: { submissions: true },
+      },
     };
   }
 
