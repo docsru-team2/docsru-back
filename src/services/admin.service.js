@@ -179,14 +179,16 @@ export class AdminService {
 
   // 작업물 수정
   async editSubmission(id, adminId, data) {
-    const submisson = await this.#submissionRepository.findById(id, {});
+    const submisson = await this.#submissionRepository.findById(id, {
+      isAdmin: true,
+    });
 
     if (!submisson)
       throw new NotFoundException(ERROR_CODE.SUBMISSION_NOT_FOUND);
 
     const updated = await this.#submissionRepository.update(id, data);
 
-    await this.#notificationService.notify(submisson.creator.id, {
+    await this.#notificationService.notify(submisson.userId, {
       actorUserId: adminId,
       type: 'SUBMISSION_UPDATED',
       content: '작업물이 수정되었습니다.',
@@ -198,7 +200,9 @@ export class AdminService {
 
   // 작업물 삭제(soft delete)
   async deleteSubmission(id, adminId) {
-    const submisson = await this.#submissionRepository.findById(id, {});
+    const submisson = await this.#submissionRepository.findById(id, {
+      isAdmin: true,
+    });
 
     if (!submisson)
       throw new NotFoundException(ERROR_CODE.SUBMISSION_NOT_FOUND);
@@ -210,7 +214,7 @@ export class AdminService {
       isDeleted: true,
     });
 
-    await this.#notificationService.notify(submisson.creator.id, {
+    await this.#notificationService.notify(submisson.userId, {
       actorUserId: adminId,
       type: 'SUBMISSION_DELETED',
       content: '작업물이 삭제되었습니다.',
@@ -227,7 +231,7 @@ export class AdminService {
 
     const updated = await this.#feedbackRepository.delete(id);
 
-    await this.#notificationService.notify(feeback.creator.id, {
+    await this.#notificationService.notify(feeback.userId, {
       actorUserId: adminId,
       type: 'FEEDBACK_ADMIN_DELETED',
       content: '피드백이 삭제되었습니다.',

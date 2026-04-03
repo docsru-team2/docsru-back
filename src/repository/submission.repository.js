@@ -91,9 +91,9 @@ export class SubmissionRepository {
   }
 
   //작업물 상세 조회
-  findById(id) {
+  findById(id, { isAdmin = false } = {}) {
     return this.#prisma.submission.findFirst({
-      where: this.#whereCase({ id }),
+      where: this.#whereCase({ id }, { isAdmin }),
       select: {
         ...this.#submissionSelect,
       },
