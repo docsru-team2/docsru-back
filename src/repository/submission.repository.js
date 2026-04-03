@@ -10,9 +10,9 @@ export class SubmissionRepository {
     };
   }
 
-  #orderByCase(orderBy) {
-    if (typeof orderBy === 'object' && orderBy !== null) return orderBy;
-    return SUBMISSION_ORDER_BY[orderBy] || { likes: { _count: 'desc' } };
+  #orderByCase(orderBy = SUBMISSION_ORDER_BY.LIKES_DESC) {
+    if (orderBy && typeof orderBy === 'object') return orderBy;
+    return SUBMISSION_ORDER_BY[orderBy];
   }
 
   constructor({ prisma }) {

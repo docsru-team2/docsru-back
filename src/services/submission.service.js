@@ -1,4 +1,4 @@
-import { ERROR_CODE } from '#constants';
+import { ERROR_CODE, SUBMISSION_ORDER_BY } from '#constants';
 import { ConflictException, NotFoundException } from '#exceptions';
 
 export class SubmissionService {
@@ -26,8 +26,30 @@ export class SubmissionService {
       { page: Number(page), limit: Number(limit), orderBy },
     );
 
+   let currentRank = 1;
+   let nextRankCounter = 0;
+   
+   const rankList = list.map((submission, index) => {
+     if (index > 0) {
+       const prevSubmission = list[index - 1];
+       
+       if (submission._count.likes < prevSubmission._count.likes) {
+         currentRank += nextRankCounter + 1;
+         nextRankCounter = 0;
+        } else {
+          nextRankCounter++;
+        }
+      }
+      return {
+        ...submission,
+        rank: currentRank,
+        likes: submission._count.likes,
+        feedbacks: submission._count.feedbacks,
+      };
+    });  
+
     return {
-      list,
+      rankList,
       pagination: {
         totalCount,
         hasNext: page * limit < totalCount /* Boolean */,
