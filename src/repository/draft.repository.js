@@ -69,9 +69,10 @@ export class DraftRepository {
 
   // 특정 유저가 특정 챌린지에 쓴 임시글 조회
   findByUserAndChallenge(challengeId, userId) {
-    return this.#prisma.draft.findFirst({
+    return this.#prisma.draft.findMany({
       where: { challengeId, userId },
       select: this.#draftSelect,
+      orderBy: { updatedAt: 'desc' } 
     });
   }
 

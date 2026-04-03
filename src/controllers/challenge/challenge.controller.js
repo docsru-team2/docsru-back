@@ -87,7 +87,7 @@ export class ChallengeController extends BaseController {
 
     // 임시저장
     this.router.get('/drafts', needsLogin, (req, res, next) =>
-      this.getAllMyDraft(req, res, next),
+      this.getMyDraftByChallenge(req, res, next),
     );
 
     this.router.get('/:challengeId/drafts', needsLogin, (req, res, next) =>
@@ -254,9 +254,10 @@ export class ChallengeController extends BaseController {
 
   async getParticipants(req, res, next) {
     try {
-      const { id } = req.params;
+      const { challengeId, userId } = req.params;
       const result = await this.#challengeService.getParticipants(
-        id,
+        challengeId,
+        userId,
         req.query,
       );
       res.status(HTTP_STATUS.OK).json(result);
@@ -346,30 +347,30 @@ export class ChallengeController extends BaseController {
     }
   }
 
-  // 임시저장 목록 조회
-  async getAllMyDraft(req, res, next) {
-    try {
-      const { page, limit } = req.query;
-      const userId = req.user.id;
+  // // 임시저장 목록 조회
+  // async getAllMyDraft(req, res, next) {
+  //   try {
+  //     const { page, limit } = req.query;
+  //     const userId = req.user.id;
 
-      const result = await this.#draftService.findAll({
-        userId,
-        page: Number(page) || 1,
-        limit: Number(limit) || 10,
-      });
+  //     const result = await this.#draftService.findAll({
+  //       userId,
+  //       page: Number(page) || 1,
+  //       limit: Number(limit) || 10,
+  //     });
 
-      res.status(HTTP_STATUS.OK).json(result);
-    } catch (error) {
-      next(error);
-    }
-  }
+  //     res.status(HTTP_STATUS.OK).json(result);
+  //   } catch (error) {
+  //     next(error);
+  //   }
+  // }
 
   // 챌린지별 임시저장 목록 조회
   async getMyDraftByChallenge(req, res, next) {
     try {
       const { page, limit } = req.query;
       const userId = req.user.id;
-      const challengeId = req.challenge.id;
+      const challengeId = req.challengeId;
 
       const result = await this.#draftService.findByChallenge({
         userId,

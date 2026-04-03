@@ -6,10 +6,16 @@ import { CHALLENGE_ORDER_BY, DEFAULT_ORDER } from '#constants';
 export class ChallengeService {
   #challengeRepository;
   #challengeParticipantRepository;
+  #submissionRepository;
 
-  constructor({ challengeRepository, challengeParticipantRepository }) {
+  constructor({
+    challengeRepository,
+    challengeParticipantRepository,
+    submissionRepository,
+  }) {
     this.#challengeRepository = challengeRepository;
     this.#challengeParticipantRepository = challengeParticipantRepository;
+    this.#submissionRepository = submissionRepository;
   }
 
   // 챌린지 목록 조회 (통합)
@@ -119,14 +125,18 @@ export class ChallengeService {
   }
 
   // 참여자 목록 조회 (페이지네이션 포함)
-  async getParticipants(challengeId, query) {
+  async getParticipants(challengeId, userId, query = {}) {
     const { list, totalCount } =
       await this.#challengeParticipantRepository.findAll({
         id: challengeId,
         page: Number(query.page) || 1,
         limit: Number(query.limit) || 10,
       });
-
+    const submission = await this.#submissionRepository.findIfUserSubmit({
+      challengeId,
+      userId,
+    });
+    const submissionId = submission.id;
     return {
       list: list.map((item) => {
         const { submission, _count, ...user } = item.user;

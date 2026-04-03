@@ -11,6 +11,7 @@ export const challengeIdParamSchema = z.object({
   challengeId: z.ulid({
     message: '데이터 식별 오류',
   }),
+  draftId: z.ulid({ message: '데이터 식별 오류' }).optional(),
 });
 
 // 챌린지 생성 스키마
