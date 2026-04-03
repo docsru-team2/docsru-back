@@ -369,7 +369,7 @@ export class ChallengeController extends BaseController {
   async getMyDraftByChallenge(req, res, next) {
     try {
       const { page, limit } = req.query;
-      const userId = req.userId;
+      const userId = req.user.id;
       const challengeId = req.challengeId;
 
       const result = await this.#draftService.findByChallenge({

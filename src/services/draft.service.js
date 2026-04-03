@@ -26,11 +26,13 @@ export class DraftService {
   }
 
   //챌린지로 조회
-  async findByChallenge(challengeId) {
-    const draft = await this.#draftRepository.findByUserAndChallenge({
+  async findByChallenge({ challengeId, userId }) {
+    const draft = await this.#draftRepository.findByUserAndChallenge(
       challengeId,
-    });
-    if (!draft) throw new NotFoundException(ERROR_CODE.DRAFT_NOT_FOUND);
+      userId,
+    );
+    if (!draft || draft.length === 0)
+      throw new NotFoundException(ERROR_CODE.DRAFT_NOT_FOUND);
     return draft;
   }
 
