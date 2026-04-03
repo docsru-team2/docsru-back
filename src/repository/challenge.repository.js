@@ -49,7 +49,7 @@ export class ChallengeRepository {
 
   #orderByCase(orderBy = DEFAULT_ORDER) {
     if (orderBy && typeof orderBy === 'object') return orderBy;
-    
+
     return CHALLENGE_ORDER_BY[orderBy];
   }
 
@@ -300,6 +300,22 @@ export class ChallengeRepository {
         deleteReason,
       },
       select: this.#challengeDetailSelect,
+    });
+  }
+
+  // deadline 지난 챌린지 마감
+  async updateExpiredChallenges() {
+    const now = new Date();
+
+    return await this.#prisma.challenge.updateMany({
+      where: {
+        progressStatus: { OR: ['OPEN', null] },
+        deadline: { lt: now },
+        reviewStatus: 'APPROVED',
+      },
+      data: {
+        progressStatus: 'CLOSED',
+      },
     });
   }
 }

@@ -104,6 +104,9 @@ export class SubmissionRepository {
   async findIfUserSubmit(challengeId, userId) {
     return await this.#prisma.submission.findFirst({
       where: { challengeId, userId, isDeleted: false },
+      select: {
+        ...this.#submissionSelect,
+      },
     });
   }
 

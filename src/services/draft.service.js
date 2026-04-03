@@ -26,18 +26,18 @@ export class DraftService {
   }
 
   //챌린지로 조회
-  async findByChallenge(challengeId, userId) {
-    const draft = await this.#draftRepository.findByUserAndChallenge(
+  async findByChallenge(challengeId) {
+    const draft = await this.#draftRepository.findByUserAndChallenge({
       challengeId,
-      userId,
-    );
+    });
     if (!draft) throw new NotFoundException(ERROR_CODE.DRAFT_NOT_FOUND);
     return draft;
   }
 
   // 임시저장 상세 조회
-  async findDetail(id) {
-    const draft = await this.#draftRepository.findById(id);
+  async findDetail(draftId) {
+
+    const draft = await this.#draftRepository.findById(draftId);
     if (!draft) throw new NotFoundException(ERROR_CODE.DRAFT_NOT_FOUND);
     return draft;
   }
