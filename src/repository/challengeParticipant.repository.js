@@ -66,6 +66,14 @@ export class ChallengeParticipantRepository {
     });
   }
 
+  //승인된 챌린지 참여 포기
+  async withdrawChallenge(challengeId, userId) {
+    return await this.#prisma.challengeParticipant.delete({
+      where: { challengeId_userId : {challengeId, userId}},
+      select: this.#participantSelect,
+    });
+  }
+
   //챌린지 참여 여부 확인
   async findIfUserInChallenge(challengeId, userId) {
     return await this.#prisma.challengeParticipant.findUnique({
