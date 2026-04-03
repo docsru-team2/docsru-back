@@ -257,7 +257,6 @@ export class ChallengeController extends BaseController {
       const { id } = req.params;
       const result = await this.#challengeService.getParticipants(
         id,
-        req.user?.id,
         req.query,
       );
       res.status(HTTP_STATUS.OK).json(result);

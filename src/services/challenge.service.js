@@ -125,18 +125,13 @@ export class ChallengeService {
   }
 
   // 참여자 목록 조회 (페이지네이션 포함)
-  async getParticipants(challengeId, userId, query = {}) {
+  async getParticipants(challengeId, query = {}) {
     const { list, totalCount } =
       await this.#challengeParticipantRepository.findAll({
         id: challengeId,
         page: Number(query.page) || 1,
         limit: Number(query.limit) || 10,
       });
-    const submission = await this.#submissionRepository.findIfUserSubmit({
-      challengeId,
-      userId,
-    });
-    const submissionId = submission.id;
     return {
       list: list.map((item) => {
         const { submission, _count, ...user } = item.user;
