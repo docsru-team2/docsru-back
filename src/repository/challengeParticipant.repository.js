@@ -44,7 +44,7 @@ export class ChallengeParticipantRepository {
             select: {
               ...this.#participantSelect.user.select,
               submission: {
-                where: { challengeId: id },
+                where: { challengeId: id, isDeleted: false },
                 select: { id: true },
                 take: 1,
               },
