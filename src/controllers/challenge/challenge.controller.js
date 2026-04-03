@@ -254,10 +254,10 @@ export class ChallengeController extends BaseController {
 
   async getParticipants(req, res, next) {
     try {
-      const { challengeId, userId } = req.params;
+      const { id } = req.params;
       const result = await this.#challengeService.getParticipants(
-        challengeId,
-        userId,
+        id,
+        req.user?.id,
         req.query,
       );
       res.status(HTTP_STATUS.OK).json(result);
