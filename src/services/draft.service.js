@@ -31,9 +31,7 @@ export class DraftService {
       challengeId,
       userId,
     );
-    if (!draft || draft.length === 0)
-      throw new NotFoundException(ERROR_CODE.DRAFT_NOT_FOUND);
-    return draft;
+    return draft || [];
   }
 
   // 임시저장 상세 조회
