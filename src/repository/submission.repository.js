@@ -1,3 +1,5 @@
+import { SUBMISSION_ORDER_BY } from '#constants';
+
 export class SubmissionRepository {
   #prisma;
 
@@ -6,6 +8,11 @@ export class SubmissionRepository {
       ...filter,
       ...(isAdmin ? {} : { isDeleted: false }),
     };
+  }
+
+  #orderByCase(orderBy = SUBMISSION_ORDER_BY.LIKES_DESC) {
+    if (orderBy && typeof orderBy === 'object') return orderBy;
+    return SUBMISSION_ORDER_BY[orderBy];
   }
 
   constructor({ prisma }) {
@@ -45,9 +52,7 @@ export class SubmissionRepository {
         where,
         skip,
         take: limit,
-        orderBy: orderBy
-          ? { [orderBy]: 'desc' }
-          : { likes: { _count: 'desc' } },
+        orderBy: this.#orderByCase(orderBy),
         select: this.#submissionSelect,
       }),
       this.#prisma.submission.count({ where }),
@@ -113,7 +118,7 @@ export class SubmissionRepository {
   //작업물 수정
   update(id, data) {
     return this.#prisma.submission.update({
-      where: this.#whereCase({ id }),
+      where: { id },
       data,
       select: this.#submissionSelect,
     });
@@ -122,7 +127,7 @@ export class SubmissionRepository {
   //작업물 삭제 (소프트 삭제)
   updateToDeleted(id) {
     return this.#prisma.submission.update({
-      where: this.#whereCase({ id }),
+      where: { id },
       data: { isDeleted: true },
       select: {
         id: true,

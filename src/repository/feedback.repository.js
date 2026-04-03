@@ -1,8 +1,15 @@
+import { ORDER_BY_CREATED } from '#constants';
+
 export class FeedbackRepository {
   #prisma;
 
   constructor({ prisma }) {
     this.#prisma = prisma;
+  }
+
+  #orderByCase(orderBy) {
+    if (typeof orderBy === 'object' && orderBy !== null) return orderBy;
+    return ORDER_BY_CREATED[orderBy] || { createdAt: 'desc' };
   }
 
   get #feedbackSelect() {
@@ -34,7 +41,7 @@ export class FeedbackRepository {
         skip,
         take: limit,
         select: this.#feedbackSelect,
-        orderBy: orderBy ? { [orderBy]: 'desc' } : { createdAt: 'desc' },
+        orderBy: this.#orderByCase(orderBy),
       }),
       this.#prisma.feedback.count({ where }),
     ]);

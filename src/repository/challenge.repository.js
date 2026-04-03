@@ -1,5 +1,11 @@
+import { CHALLENGE_ORDER_BY, DEFAULT_ORDER } from '#constants';
+
 export class ChallengeRepository {
   #prisma;
+
+  constructor({ prisma }) {
+    this.#prisma = prisma;
+  }
 
   #whereCase({
     keyword,
@@ -41,9 +47,12 @@ export class ChallengeRepository {
     };
   }
 
-  constructor({ prisma }) {
-    this.#prisma = prisma;
+  #orderByCase(orderBy = DEFAULT_ORDER) {
+    if (orderBy && typeof orderBy === 'object') return orderBy;
+    
+    return CHALLENGE_ORDER_BY[orderBy];
   }
+
   get #challengeListSelect() {
     return {
       id: true,
@@ -73,6 +82,14 @@ export class ChallengeRepository {
       creator: {
         select: { id: true, nickname: true },
       },
+      submissions: {
+        select: {
+          id: true,
+        },
+      },
+      _count: {
+        select: { submissions: true },
+      },
     };
   }
 
@@ -83,7 +100,6 @@ export class ChallengeRepository {
     orderBy,
     keyword,
     reviewStatus,
-    viewType,
     userType,
     field,
     documentType,
@@ -94,7 +110,6 @@ export class ChallengeRepository {
       keyword,
       reviewStatus,
       userType,
-      viewType,
       field,
       documentType,
       progressStatus,
@@ -105,7 +120,7 @@ export class ChallengeRepository {
         where,
         skip,
         take: limit,
-        orderBy,
+        orderBy: this.#orderByCase(orderBy),
         select: this.#challengeListSelect,
       }),
       this.#prisma.challenge.count({ where }),
@@ -122,16 +137,20 @@ export class ChallengeRepository {
     orderBy,
   }) {
     const skip = (page - 1) * limit;
+    const reviewStatusFilter =
+      progressStatus === 'CLOSED'
+        ? { in: ['APPROVED', 'DELETED'] }
+        : 'APPROVED';
     const where = {
-      reviewStatus: 'APPROVED',
+      reviewStatus: reviewStatusFilter,
       participants: { some: { userId } },
+      ...(progressStatus === 'CLOSED' && {
+        submissions: { some: { userId } },
+      }),
       ...(keyword?.trim() && {
         title: { contains: keyword.trim(), mode: 'insensitive' },
       }),
       ...(progressStatus && { progressStatus }),
-      ...(progressStatus === 'CLOSED' && userId
-        ? { submissions: { some: { userId } } }
-        : {}),
     };
 
     return await Promise.all([
@@ -139,7 +158,7 @@ export class ChallengeRepository {
         where,
         skip,
         take: limit,
-        orderBy,
+        orderBy: this.#orderByCase(orderBy),
         select: this.#challengeListSelect,
       }),
       this.#prisma.challenge.count({ where }),
@@ -169,7 +188,7 @@ export class ChallengeRepository {
         where,
         skip,
         take: limit,
-        orderBy,
+        orderBy: this.#orderByCase(orderBy),
         select: this.#challengeListSelect,
       }),
       this.#prisma.challenge.count({ where }),
@@ -187,8 +206,16 @@ export class ChallengeRepository {
           ? {}
           : {
               OR: [
-                ...(userId ? [{ creatorId: userId }] : []),
                 { reviewStatus: 'APPROVED' },
+                ...(userId ? [{ creatorId: userId }] : []),
+                ...(userId
+                  ? [
+                      {
+                        reviewStatus: 'DELETED',
+                        submissions: { some: { userId } },
+                      },
+                    ]
+                  : []),
               ],
             }),
       },
@@ -230,12 +257,12 @@ export class ChallengeRepository {
   }
 
   // 관리자 - 검토 상태 변경 (승인/거절)
-  updateReviewStatus(id, { reviewStatus, progressStatus, rejectReason }) {
+  updateReviewStatus(id, { reviewStatus, rejectReason }) {
     return this.#prisma.challenge.update({
       where: { id },
       data: {
         reviewStatus,
-        progressStatus,
+        progressStatus: reviewStatus === 'APPROVED' ? 'OPEN' : null,
         rejectReason: reviewStatus === 'APPROVED' ? null : rejectReason,
         deleteReason: null,
       },
@@ -268,7 +295,7 @@ export class ChallengeRepository {
       where: { id },
       data: {
         reviewStatus: 'DELETED',
-        progressStatus: null,
+        progressStatus: 'CLOSED',
         rejectReason: null,
         deleteReason,
       },

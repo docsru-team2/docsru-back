@@ -5,29 +5,36 @@ import { CHALLENGE_ORDER_BY, DEFAULT_ORDER } from '#constants';
 
 export class ChallengeService {
   #challengeRepository;
-  #participantRepository;
+  #challengeParticipantRepository;
 
   constructor({ challengeRepository, challengeParticipantRepository }) {
     this.#challengeRepository = challengeRepository;
-    this.#participantRepository = challengeParticipantRepository;
+    this.#challengeParticipantRepository = challengeParticipantRepository;
   }
 
   // 챌린지 목록 조회 (통합)
   async findAll(params, isAdmin = false) {
-    const { page = 1, limit = 10, sort, ...rest } = params;
-    const orderBy = CHALLENGE_ORDER_BY[sort] || DEFAULT_ORDER;
+    const { page = 1, limit = 10, orderBy, ...rest } = params;
 
     const [list, totalCount] = await this.#challengeRepository.findAll({
       page: Number(page),
       limit: Number(limit),
       orderBy,
       userType: isAdmin ? 'ADMIN' : 'USER',
-      viewType: 'LIST',
       ...rest,
+    });
+    const now = new Date();
+
+    const currentList = list.map((challenge) => {
+      const isExpired = new Date(challenge.deadline) < now;
+      return {
+        ...challenge,
+        progressStatus: isExpired ? 'CLOSED' : challenge.progressStatus,
+      };
     });
 
     return {
-      list,
+      list: currentList,
       pagination: {
         totalCount,
         hasNext: page * limit < totalCount /* Boolean */,
@@ -68,18 +75,20 @@ export class ChallengeService {
 
   // 챌린지 참여 신청
   async joinChallenge(challengeId, userId) {
-    const isJoined = await this.#participantRepository.findIfUserInChallenge(
-      challengeId,
-      userId,
-    );
+    const isJoined =
+      await this.#challengeParticipantRepository.findIfUserInChallenge(
+        challengeId,
+        userId,
+      );
 
     if (isJoined) {
       throw new ConflictException(ERROR_CODE.CHALLENGE_ALREADY_JOINED);
     }
-    const challenge = await this.findDetail(challengeId);
-    const participantsCount = await this.#participantRepository.findAll({
-      id: challengeId,
-    });
+    const challenge = await this.#challengeRepository.findById(challengeId);
+    const participantsCount =
+      await this.#challengeParticipantRepository.findAll({
+        id: challengeId,
+      });
 
     if (participantsCount.totalCount >= challenge.maxParticipants) {
       throw new ConflictException(
@@ -87,45 +96,77 @@ export class ChallengeService {
       );
     }
 
-    return await this.#participantRepository.joinChallenge(challengeId, userId);
+    return await this.#challengeParticipantRepository.joinChallenge(
+      challengeId,
+      userId,
+    );
+  }
+  // 챌린지 참가 포기
+  async withdrawChallenge(challengeId, userId) {
+    const isJoined =
+      await this.#challengeParticipantRepository.findIfUserInChallenge(
+        challengeId,
+        userId,
+      );
+
+    if (!isJoined) {
+      throw new NotFoundException(ERROR_CODE.CHALLENGE_NOT_JOINED)
+    }
+    return await this.#challengeParticipantRepository.withdrawChallenge(
+      challengeId,
+      userId,
+    );
   }
 
   // 참여자 목록 조회 (페이지네이션 포함)
   async getParticipants(challengeId, query) {
-    const { list, totalCount } = await this.#participantRepository.findAll({
-      id: challengeId,
-      page: Number(query.page) || 1,
-      limit: Number(query.limit) || 10,
-    });
+    const { list, totalCount } =
+      await this.#challengeParticipantRepository.findAll({
+        id: challengeId,
+        page: Number(query.page) || 1,
+        limit: Number(query.limit) || 10,
+      });
 
     return {
-      list: list.map((item) => ({
-        id: item.id,
-        author: {
-          ...item.user,
-          likeCount: item.user._count.submissionLike,
-        },
-        createdAt: item.createdAt,
-      })),
+      list: list.map((item) => {
+        const { submission, _count, ...user } = item.user;
+        return {
+          id: item.id,
+          author: {
+            ...user,
+            submissionId: submission?.[0]?.id || '',
+            likeCount: _count.submissionLike,
+          },
+          createdAt: item.createdAt,
+        };
+      }),
       pagination: {
         totalCount,
-        hasNext: query.page * query.limit < totalCount,
+        hasNext: Number(query.page) * Number(query.limit) < totalCount,
       },
     };
   }
   // 내가 생성한 챌린지 목록 조회 (/challenges/me/applied)
   async findAppliedChallenges(params) {
-    const { page = 1, limit = 10, orderBy: sort, creatorId, keyword, reviewStatus } = params;
-    const orderBy = CHALLENGE_ORDER_BY[sort] || DEFAULT_ORDER;
-
-    const [list, totalCount] = await this.#challengeRepository.findCreatedChallenges({
-      page: Number(page),
-      limit: Number(limit),
-      orderBy,
+    const {
+      page = 1,
+      limit = 10,
+      orderBy: sort,
       creatorId,
       keyword,
       reviewStatus,
-    });
+    } = params;
+    const orderBy = CHALLENGE_ORDER_BY[sort] || DEFAULT_ORDER;
+
+    const [list, totalCount] =
+      await this.#challengeRepository.findCreatedChallenges({
+        page: Number(page),
+        limit: Number(limit),
+        orderBy,
+        creatorId,
+        keyword,
+        reviewStatus,
+      });
 
     return {
       list,

@@ -67,6 +67,14 @@ export class SubmissionController extends BaseController {
       (req, res, next) => this.createFeedback(req, res, next),
     );
 
+    //좋아요 여부 확인
+    this.router.get(
+      '/:submissionId/likes',
+      needsLogin,
+      validate('params', submissionIdParamSchema),
+      (req, res, next) => this.checkLike(req, res, next),
+    );
+
     //좋아요
     this.router.post(
       '/:submissionId/likes',
@@ -167,6 +175,21 @@ export class SubmissionController extends BaseController {
   }
 
   //좋아요
+  //좋아요 여부 확인
+  async checkLike(req, res, next) {
+    try {
+      const { submissionId } = req.params;
+      const userId = req.user.id;
+      const result = await this.#submissionLikeService.check(
+        submissionId,
+        userId,
+      );
+      res.status(HTTP_STATUS.OK).json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   //작업물 좋아요
   async like(req, res, next) {
     try {

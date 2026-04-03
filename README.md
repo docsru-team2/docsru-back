@@ -8,7 +8,11 @@ codeit sprint 중급 프로젝트 part3 - team2
 
 - (26.3.19.) 백엔드 레포입니다. 세팅 완료..! 핑이 잘 찍혀요~ (그런데 일부 파일은 껍데기만 있답니다... 열심히 채워야 해요!)
 - (26.3.25.) 로그인 기능 구현
-- (26.3.26.) ~api 작업 진행중~ (/auth, /user, /Challenges, /admin 완료)
+- (26.3.26.) ~api 작업 진행중~ `/auth`, `/user`, `/Challenges`, `/admin` 완료
+- (26.3.27.) ~api 작업 진행중~ (리팩토링)
+- (26.3.30.) ~api 작업 진행중~ (리팩토링) `/notification` 완료
+- (26.3.31.) 우리서버 정상영업 합니다 (드디어..!!)  `/submissions`, `/draft` 완료
+- (26.4. 1.) 백엔드 서버 기능 테스트 및 배포
 
 #### [🌟백엔드 서버 구동 에러 발생 시 가이드](#백엔드-서버-구동-에러-시-트러블슈팅-가이드)
 
@@ -54,6 +58,7 @@ codeit sprint 중급 프로젝트 part3 - team2
     │  ├─ admin
     │  ├─ auth
     │  ├─ challenge
+    │  ├─ feedback
     │  ├─ notification
     │  ├─ submission
     │  ├─ user
@@ -89,10 +94,13 @@ codeit sprint 중급 프로젝트 part3 - team2
        ├─ admin.service.js
        ├─ auth.service.js
        ├─ challenge.service.js
+       ├─ draft.service.js
+       ├─ feedback.service.js
        ├─ index.js
        ├─ notification.service.js
        ├─ social-auth.service.js
        ├─ submission.service.js
+       ├─ submissionLike.service.js
        └─ user.service.js
 
 
