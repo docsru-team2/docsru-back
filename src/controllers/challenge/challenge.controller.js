@@ -78,6 +78,12 @@ export class ChallengeController extends BaseController {
       validate('params', idParamSchema),
       (req, res, next) => this.join(req, res, next),
     );
+    this.router.delete(
+      '/:id/participants',
+      needsLogin,
+      validate('params', idParamSchema),
+      (req, res, next) => this.withdraw(req, res, next),
+    );
 
     // 임시저장
     this.router.get('/drafts', needsLogin, (req, res, next) =>
@@ -219,6 +225,7 @@ export class ChallengeController extends BaseController {
     }
   }
 
+  //챌린지 참가 신청
   async join(req, res, next) {
     try {
       const { id } = req.params;
@@ -227,6 +234,19 @@ export class ChallengeController extends BaseController {
         req.user.id,
       );
       res.status(HTTP_STATUS.CREATED).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  //챌린지 참가 포기
+  async withdraw(req, res, next) {
+    try {
+      const { id } = req.params;
+      await this.#challengeService.withdrawChallenge(id, req.user.id);
+      res
+        .status(HTTP_STATUS.OK)
+        .json({ success: true, message: '챌린지 참가를 포기했습니다.' });
     } catch (error) {
       next(error);
     }
@@ -277,6 +297,7 @@ export class ChallengeController extends BaseController {
       next(error);
     }
   }
+
   //작업물 전체 조회
   async getAllSubmissions(req, res, next) {
     try {

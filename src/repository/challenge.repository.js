@@ -258,7 +258,6 @@ export class ChallengeRepository {
 
   // 관리자 - 검토 상태 변경 (승인/거절)
   updateReviewStatus(id, { reviewStatus, rejectReason }) {
-
     return this.#prisma.challenge.update({
       where: { id },
       data: {
@@ -296,7 +295,7 @@ export class ChallengeRepository {
       where: { id },
       data: {
         reviewStatus: 'DELETED',
-        progressStatus: null,
+        progressStatus: 'CLOSED',
         rejectReason: null,
         deleteReason,
       },
