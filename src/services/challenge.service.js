@@ -23,9 +23,18 @@ export class ChallengeService {
       userType: isAdmin ? 'ADMIN' : 'USER',
       ...rest,
     });
+    const now = new Date();
+
+    const currentList = list.map((challenge) => {
+      const isExpired = new Date(challenge.deadline) < now;
+      return {
+        ...challenge,
+        progressStatus: isExpired ? 'CLOSED' : challenge.progressStatus,
+      };
+    });
 
     return {
-      list,
+      list: currentList,
       pagination: {
         totalCount,
         hasNext: page * limit < totalCount /* Boolean */,
