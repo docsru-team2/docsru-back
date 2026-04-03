@@ -1,4 +1,4 @@
-import { ERROR_CODE, SUBMISSION_ORDER_BY } from '#constants';
+import { ERROR_CODE } from '#constants';
 import { ConflictException, NotFoundException } from '#exceptions';
 
 export class SubmissionService {
@@ -49,7 +49,7 @@ export class SubmissionService {
     });  
 
     return {
-      rankList,
+      list: rankList,
       pagination: {
         totalCount,
         hasNext: page * limit < totalCount /* Boolean */,
