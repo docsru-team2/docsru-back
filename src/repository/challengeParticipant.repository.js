@@ -38,8 +38,20 @@ export class ChallengeParticipantRepository {
         where,
         skip,
         take: limit,
-        select: this.#participantSelect,
-        orderBy: { createdAt: 'desc' } /* 혹시몰라서 넣었음 */,
+        select: {
+          ...this.#participantSelect,
+          user: {
+            select: {
+              ...this.#participantSelect.user.select,
+              submission: {
+                where: { challengeId: id },
+                select: { id: true },
+                take: 1,
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
       }),
       this.#prisma.challengeParticipant.count({ where }),
     ]);

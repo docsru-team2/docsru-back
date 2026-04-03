@@ -103,14 +103,18 @@ export class ChallengeService {
       });
 
     return {
-      list: list.map((item) => ({
-        id: item.id,
-        author: {
-          ...item.user,
-          likeCount: item.user._count.submissionLike,
-        },
-        createdAt: item.createdAt,
-      })),
+      list: list.map((item) => {
+        const { submission, _count, ...user } = item.user;
+        return {
+          id: item.id,
+          author: {
+            ...user,
+            submissionId: submission?.[0]?.id || '',
+            likeCount: _count.submissionLike,
+          },
+          createdAt: item.createdAt,
+        };
+      }),
       pagination: {
         totalCount,
         hasNext: Number(query.page) * Number(query.limit) < totalCount,
