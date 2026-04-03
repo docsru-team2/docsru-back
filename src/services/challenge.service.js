@@ -92,6 +92,22 @@ export class ChallengeService {
       userId,
     );
   }
+  // 챌린지 참가 포기
+  async withdrawChallenge(challengeId, userId) {
+    const isJoined =
+      await this.#challengeParticipantRepository.findIfUserInChallenge(
+        challengeId,
+        userId,
+      );
+
+    if (!isJoined) {
+      throw new NotFoundException(ERROR_CODE.CHALLENGE_NOT_JOINED)
+    }
+    return await this.#challengeParticipantRepository.withdrawChallenge(
+      challengeId,
+      userId,
+    );
+  }
 
   // 참여자 목록 조회 (페이지네이션 포함)
   async getParticipants(challengeId, query) {

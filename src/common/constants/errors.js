@@ -104,6 +104,11 @@ export const ERROR_CODE = {
     code: 'CHALLENGE_NOT_FOUND',
     message: '챌린지 없음',
   },
+  CHALLENGE_NOT_JOINED: {
+    status: HTTP_STATUS.NOT_FOUND,
+    code: 'CHALLENGE_NOT_JOINED',
+    message: '챌린지 참가 중이 아닙니다.',
+  },
   NOTIFICATION_NOT_FOUND: {
     status: HTTP_STATUS.NOT_FOUND,
     code: 'NOTIFICATION_NOT_FOUND',
