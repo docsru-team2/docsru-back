@@ -7,6 +7,13 @@ import bcrypt from 'bcrypt';
 const SEED_PASSWORD = 'test1!';
 
 const FIELDS = ['NEXT_JS', 'MODERN_JS', 'API', 'WEB', 'CAREER'];
+const SOURCE_URL_MAP = {
+  NEXT_JS: 'https://nextjs.org/docs',
+  MODERN_JS: 'https://javascript.info',
+  API: 'https://developer.mozilla.org/ko/docs/Web/API',
+  WEB: 'https://developer.mozilla.org/ko/docs/Web',
+  CAREER: 'https://react.dev/reference/react',
+};
 const DOCUMENT_TYPES = ['OFFICIAL_DOC', 'BLOG', 'BOOK', 'ETC'];
 
 // ──────────────────────── 수량 설정 ────────────────────────
@@ -83,12 +90,13 @@ class Seeder {
 
     // APPROVED + OPEN
     for (let i = 0; i < COUNT.openChallenges; i++) {
+      const field = this.#pick(FIELDS);
       challenges.push(
         await this.#prisma.challenge.create({
           data: {
             title: faker.lorem.sentence({ min: 3, max: 8 }),
-            sourceUrl: faker.internet.url(),
-            field: this.#pick(FIELDS),
+            sourceUrl: SOURCE_URL_MAP[field],
+            field,
             documentType: this.#pick(DOCUMENT_TYPES),
             description: faker.lorem.paragraphs(2),
             deadline: faker.date.future({ years: 1 }),
@@ -103,12 +111,13 @@ class Seeder {
 
     // APPROVED + CLOSED
     for (let i = 0; i < COUNT.closedChallenges; i++) {
+      const field = this.#pick(FIELDS);
       challenges.push(
         await this.#prisma.challenge.create({
           data: {
             title: faker.lorem.sentence({ min: 3, max: 8 }),
-            sourceUrl: faker.internet.url(),
-            field: this.#pick(FIELDS),
+            sourceUrl: SOURCE_URL_MAP[field],
+            field,
             documentType: this.#pick(DOCUMENT_TYPES),
             description: faker.lorem.paragraphs(2),
             deadline: faker.date.past({ years: 1 }),
@@ -123,12 +132,13 @@ class Seeder {
 
     // PENDING
     for (let i = 0; i < COUNT.pendingChallenges; i++) {
+      const field = this.#pick(FIELDS);
       challenges.push(
         await this.#prisma.challenge.create({
           data: {
             title: faker.lorem.sentence({ min: 3, max: 8 }),
-            sourceUrl: faker.internet.url(),
-            field: this.#pick(FIELDS),
+            sourceUrl: SOURCE_URL_MAP[field],
+            field,
             documentType: this.#pick(DOCUMENT_TYPES),
             description: faker.lorem.paragraphs(2),
             deadline: faker.date.future({ years: 1 }),
@@ -146,12 +156,13 @@ class Seeder {
 
     // REJECTED
     for (let i = 0; i < COUNT.rejectedChallenges; i++) {
+      const field = this.#pick(FIELDS);
       challenges.push(
         await this.#prisma.challenge.create({
           data: {
             title: faker.lorem.sentence({ min: 3, max: 8 }),
-            sourceUrl: faker.internet.url(),
-            field: this.#pick(FIELDS),
+            sourceUrl: SOURCE_URL_MAP[field],
+            field,
             documentType: this.#pick(DOCUMENT_TYPES),
             description: faker.lorem.paragraphs(2),
             deadline: faker.date.future({ years: 1 }),

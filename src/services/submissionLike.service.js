@@ -43,6 +43,19 @@ export class SubmissionLikeService {
     return await this.#submissionLikeRepository.like(submissionId, userId);
   }
 
+  //좋아요 여부 확인
+  async check(submissionId, userId) {
+    const submission = await this.#submissionRepository.findById(submissionId);
+    if (!submission) {
+      throw new NotFoundException(ERROR_CODE.SUBMISSION_NOT_FOUND);
+    }
+    const isLiked = await this.#submissionLikeRepository.findIfUserLike(
+      submissionId,
+      userId,
+    );
+    return { isLiked: !!isLiked };
+  }
+
   //좋아요 취소
   async cancel(submissionId, userId) {
     const { isLiked } = await this.#likeValidation(submissionId, userId);

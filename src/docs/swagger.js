@@ -3,6 +3,9 @@ import { authPaths } from './paths/auth.paths.js';
 import { userPaths } from './paths/user.paths.js';
 import { challengePaths } from './paths/challenge.paths.js';
 import { adminPaths } from './paths/admin.paths.js';
+import { submissionPaths } from './paths/submission.paths.js';
+import { feedbackPaths } from './paths/feedback.paths.js';
+import { notificationPaths } from './paths/notification.paths.js';
 
 const swaggerDocument = {
   openapi: '3.0.0',
@@ -22,6 +25,9 @@ const swaggerDocument = {
     { name: 'Auth', description: '인증 (회원가입, 로그인, 소셜 로그인)' },
     { name: 'User', description: '유저 관리' },
     { name: 'Challenge', description: '챌린지 관리' },
+    { name: 'Submission', description: '작업물 관리' },
+    { name: 'Feedback', description: '피드백 관리' },
+    { name: 'Notification', description: '알림 관리' },
     { name: 'Admin', description: '관리자 기능' },
   ],
   components: {
@@ -96,6 +102,9 @@ const swaggerDocument = {
     ...authPaths,
     ...userPaths,
     ...challengePaths,
+    ...submissionPaths,
+    ...feedbackPaths,
+    ...notificationPaths,
     ...adminPaths,
   },
 };
