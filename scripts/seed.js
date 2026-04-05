@@ -276,14 +276,15 @@ class Seeder {
     return feedbacks;
   }
 
-  async #seedDrafts(challenges, users) {
+  async #seedDrafts(challenges, users, participants) {
     const drafts = [];
-    const approvedOrPendingChallenges = challenges.filter(
-      (c) => c.reviewStatus === 'APPROVED' || c.reviewStatus === 'PENDING',
-    );
 
     for (const user of users.slice(0, 10)) {
-      const shuffled = [...approvedOrPendingChallenges].sort(() => Math.random() - 0.5);
+      const joinedIds = participants.filter((p) => p.userId === user.id).map((p) => p.challengeId);
+      const joinedApproved = challenges.filter((c) => joinedIds.includes(c.id) && c.reviewStatus === 'APPROVED');
+      if (joinedApproved.length === 0) continue;
+
+      const shuffled = [...joinedApproved].sort(() => Math.random() - 0.5);
       for (const challenge of shuffled.slice(0, COUNT.draftsPerUser)) {
         const draft = await this.#prisma.draft.create({
           data: {
@@ -583,7 +584,7 @@ class Seeder {
     const feedbacks = await this.#seedFeedbacks(submissions, users);
     console.log(`✅ 피드백 ${feedbacks.length}개 생성`);
 
-    const drafts = await this.#seedDrafts(challenges, users);
+    const drafts = await this.#seedDrafts(challenges, users, participants);
     console.log(`✅ 임시저장 ${drafts.length}개 생성`);
 
     const notifications = await this.#seedNotifications(admin, users, challenges, submissions, feedbacks);
