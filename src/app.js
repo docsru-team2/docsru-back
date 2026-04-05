@@ -1,7 +1,7 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import { errorHandler, cors } from '#middlewares';
-// import { registerSwagger } from '#docs/swagger.js';
+import { registerSwagger } from '#docs/swagger.js';
 
 export class App {
   constructor(controller, authMiddleware) {
@@ -22,7 +22,7 @@ export class App {
   }
 
   routes(controller) {
-    // registerSwagger(this.app);
+    registerSwagger(this.app);
     this.app.use('/api', controller.routes());
   }
 
@@ -32,7 +32,7 @@ export class App {
 
   listen(port) {
     return this.app.listen(port, () => {
-      console.log(`Server is running port number is ${port}`);
+      console.log(`Server is running http://localhost:${port}`);
     });
   }
 }

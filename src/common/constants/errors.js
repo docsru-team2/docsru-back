@@ -23,6 +23,21 @@ export const ERROR_CODE = {
     code: 'INVALID_INPUT',
     message: '유효하지 않은 입력값',
   },
+  REJECT_REASON_MISSING: {
+    status: HTTP_STATUS.BAD_REQUEST,
+    code: 'REJECT_REASON_MISSING',
+    message: '거절 사유 없음',
+  },
+  UNSUPPORTED_SOCIAL_PROVIDER: {
+    status: HTTP_STATUS.BAD_REQUEST,
+    code: 'UNSUPPORTED_SOCIAL_PROVIDER',
+    message: '지원하지 않는 소셜 로그인입니다.',
+  },
+  SOCIAL_AUTH_CODE_REQUIRED: {
+    status: HTTP_STATUS.BAD_REQUEST,
+    code: 'SOCIAL_AUTH_CODE_REQUIRED',
+    message: '잘못된 소셜 로그인 코드입니다.',
+  },
 
   // 401 Unauthorized
   AUTH_UNAUTHORIZED: {
@@ -35,10 +50,15 @@ export const ERROR_CODE = {
     code: 'AUTH_INVALID_CREDENTIALS',
     message: '이메일 또는 비밀번호 불일치',
   },
-    AUTH_INVALID_TOKEN: {
+  AUTH_INVALID_TOKEN: {
     status: HTTP_STATUS.UNAUTHORIZED,
     code: 'AUTH_INVALID_TOKEN',
     message: '유효하지 않은 토큰',
+  },
+  SOCIAL_AUTH_FAILED: {
+    status: HTTP_STATUS.UNAUTHORIZED,
+    code: 'SOCIAL_AUTH_FAILED',
+    message: '소셜 로그인 실패',
   },
 
   // 403 Forbidden
@@ -46,6 +66,11 @@ export const ERROR_CODE = {
     status: HTTP_STATUS.FORBIDDEN,
     code: 'AUTH_FORBIDDEN',
     message: '권한 없음',
+  },
+  CANNOT_LIKE_MINE: {
+    status: HTTP_STATUS.FORBIDDEN,
+    code: 'CANNOT_LIKE_MINE',
+    message: '본인 작업물은 추천할 수 없습니다.',
   },
 
   // 404 Not Found
@@ -59,6 +84,11 @@ export const ERROR_CODE = {
     code: 'FEEDBACK_NOT_FOUND',
     message: '피드백 없음',
   },
+  SUBMISSION_NOT_FOUND: {
+    status: HTTP_STATUS.NOT_FOUND,
+    code: 'SUBMISSION_NOT_FOUND',
+    message: '작업물 없음',
+  },
   SUBMISSION_LIKE_NOT_FOUND: {
     status: HTTP_STATUS.NOT_FOUND,
     code: 'SUBMISSION_LIKE_NOT_FOUND',
@@ -68,6 +98,16 @@ export const ERROR_CODE = {
     status: HTTP_STATUS.NOT_FOUND,
     code: 'DRAFT_NOT_FOUND',
     message: '임시 저장 없음',
+  },
+  CHALLENGE_NOT_FOUND: {
+    status: HTTP_STATUS.NOT_FOUND,
+    code: 'CHALLENGE_NOT_FOUND',
+    message: '챌린지 없음',
+  },
+  CHALLENGE_NOT_JOINED: {
+    status: HTTP_STATUS.NOT_FOUND,
+    code: 'CHALLENGE_NOT_JOINED',
+    message: '챌린지 참가 중이 아닙니다.',
   },
   NOTIFICATION_NOT_FOUND: {
     status: HTTP_STATUS.NOT_FOUND,
@@ -120,6 +160,16 @@ export const ERROR_CODE = {
     status: HTTP_STATUS.CONFLICT,
     code: 'SUBMISSION_LIKE_ALREADY_EXISTS',
     message: '이미 추천한 작업물',
+  },
+  NOTIFICATION_ALREADY_EXISTS: {
+    status: HTTP_STATUS.CONFLICT,
+    code: 'NOTIFICATION_ALREADY_EXISTS',
+    message: '이미 해당 알림을 확인함',
+  },
+  NOTIFICATION_ALREADY_ALL_READ: {
+    status: HTTP_STATUS.NOT_FOUND,
+    code: 'NOTIFICATION_ALREADY_ALL_READ',
+    message: '전체 알람 읽음',
   },
 
   // 500 Internal Server Error

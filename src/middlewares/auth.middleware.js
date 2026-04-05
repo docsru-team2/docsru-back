@@ -17,12 +17,16 @@ export class AuthMiddleware {
         return next();
       }
 
-      const accessUserId = accessToken
-        ? this.#tokenProvider.verifyAccessToken(accessToken)?.userId
+      const payload = accessToken
+        ? this.#tokenProvider.verifyAccessToken(accessToken)
         : null;
 
-      if (accessUserId) {
-        req.user = { id: accessUserId };
+      if (payload) {
+        req.user = {
+          id: payload.userId,
+          userType: payload.userType,
+          nickname: payload.nickname,
+        };
         return next();
       }
 
@@ -35,8 +39,11 @@ export class AuthMiddleware {
         await this.#authService.refreshTokens(refreshToken);
 
       this.#cookieProvider.setAuthCookies(res, tokens);
-      req.user = { id: user.id };
-
+      req.user = {
+        id: user.id,
+        userType: user.userType,
+        nickname: user.nickname,
+      };
       return next();
     } catch {
       this.#cookieProvider.clearAuthCookies(res);

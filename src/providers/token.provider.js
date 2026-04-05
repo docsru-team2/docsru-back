@@ -14,7 +14,8 @@ export class TokenProvider {
     return jwt.sign(
       {
         userId: user.id,
-        name: user.name,
+        nickname: user.nickname,
+        userType: user.userType,
       },
       this.#accessSecret,
       { expiresIn: '1d' },

@@ -8,6 +8,7 @@ export const errorHandler = (err, req, res, _next) => {
   if (err instanceof HttpException) {
     return res.status(err.statusCode).json({
       success: false,
+      code: err.errorCode,
       message: err.message,
       ...(err.details && { details: err.details }),
     });
@@ -15,11 +16,14 @@ export const errorHandler = (err, req, res, _next) => {
 
   if (err instanceof Prisma.PrismaClientKnownRequestError) {
     if (err.code === PRISMA_ERROR.UNIQUE_CONSTRAINT) {
-      const field = err.meta?.target?.[0];
+      const field = err.meta?.target ? err.meta.target[0] : '데이터';
+      const fieldMap = { email: '이메일', nickname: '닉네임' };
+      const fieldName = fieldMap[field] || field;
+
       return res.status(HTTP_STATUS.CONFLICT).json({
         success: false,
         code: err.errorCode,
-        message: `${field}가 이미 사용 중입니다.`,
+        message: `이미 사용 중인 ${fieldName}입니다.`,
       });
     }
 
@@ -27,6 +31,7 @@ export const errorHandler = (err, req, res, _next) => {
     if (err.code === PRISMA_ERROR.RECORD_NOT_FOUND) {
       return res.status(HTTP_STATUS.NOT_FOUND).json({
         success: false,
+        code: err.errorCode,
         message: ERROR_CODE.COMMON_NOT_FOUND,
       });
     }

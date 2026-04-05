@@ -1,3 +1,18 @@
+const notificationSelect = {
+  id: true,
+  type: true,
+  content: true,
+  isRead: true,
+  targetId: true,
+  actorUserId: true,
+  createdAt: true,
+};
+
+const notificationToReadSelect = {
+  id: true,
+  isRead: true,
+};
+
 export class NotificationRepository {
   #prisma;
 
@@ -5,59 +20,78 @@ export class NotificationRepository {
     this.#prisma = prisma;
   }
 
-  findAll() {
-    return this.#prisma.notification.findMany({
-      select: {
-        id: true,
+  //내 알림 목록 조회
+  findAllByUserId(id, { cursor, limit = 10 }) {
+    const baseWhere = { userId: id };
 
-        createdAt: true,
-      },
-    });
+    return Promise.all([
+      this.#prisma.notification.findMany({
+        where: {
+          userId: id,
+          ...(cursor && { id: { lt: cursor } }),
+        },
+        take: limit + 1,
+        orderBy: { id: 'desc' },
+        select: notificationSelect,
+      }),
+      this.#prisma.notification.count({ where: baseWhere }), // totalCount
+      this.#prisma.notification.count({
+        where: { ...baseWhere, isRead: false },
+      }), // unreadCount
+    ]);
   }
 
+  // 알림 단건 조회
   findById(id) {
     return this.#prisma.notification.findUnique({
       where: {
-        id: Number(id),
+        id,
       },
-      select: {
-        id: true,
-
-        createdAt: true,
-      },
+      select: notificationSelect,
     });
   }
 
+  // 알림 생성 (내부에서만 호출)
   create(data) {
     return this.#prisma.notification.create({
       data,
-      select: {
-        id: true,
-
-        createdAt: true,
-      },
+      select: notificationSelect,
     });
   }
 
-  update(id, data) {
+  //읽음 처리 (단건)
+  updateToRead(id) {
     return this.#prisma.notification.update({
       where: {
-        id: Number(id),
+        id,
       },
-      data,
-      select: {
-        id: true,
-
-        createdAt: true,
-      },
+      data: { isRead: true },
+      select: notificationToReadSelect,
     });
   }
 
-  delete(id) {
-    return this.#prisma.notification.delete({
+  // 읽음 처리 (전체)
+  updateAllToRead(userId) {
+    return this.#prisma.notification.updateMany({
       where: {
-        id: Number(id),
+        userId,
+        isRead: false,
       },
+      data: { isRead: true },
+    });
+  }
+
+  // 알람 삭제 (단건)
+  deleteOne(id) {
+    return this.#prisma.notification.delete({
+      where: { id },
+    });
+  }
+
+  // 알람 삭제 (전체)
+  deleteAll(userId) {
+    return this.#prisma.notification.deleteMany({
+      where: { userId },
     });
   }
 }
